@@ -1,5 +1,5 @@
 #!/bin/bash
-# run several models with different initializations
+# run several models with different initializations if needed
 
 INPUT_FILE=$1
 SAMPLES_DIR=$2
@@ -25,6 +25,7 @@ echo $myname
 done
 
 else
+# needs revision
 Rscript fit_models_connectome.R $INPUT_FILE $SAMPLES_DIR/vbsamples${1} $STAN_FILE $PRIORS_FILE $FIT_FC $USEMCMC > $SAMPLES_DIR/log${1}
 ./reduce_samples.py $SAMPLES_DIR/vbsamples${i} $SAMPLES_DIR/vbsamples${1}_reduced muc sigmac raw 
 CONVERGED=`cat $SAMPLES_DIR/log${1} | grep CONVERGED |wc -l`
@@ -51,10 +52,10 @@ if [ $USEMCMC -eq 1 ]; then
 while [ `echo $SAMPLES_DIR/vbsamples*_simplified | wc -w` -lt $TOTAL_CHAINS ]; do  sleep 3600; done
 
 # collect samples
-cp $SAMPLES_DIR/vbsamples_1_reduced $SAMPLES_DIR/vbsamples
+cp $SAMPLES_DIR/vbsamples1_reduced $SAMPLES_DIR/vbsamples
 for i in `seq 2 $TOTAL_CHAINS`; do
- if [ `cat $SAMPLES_DIR/vbsamples_${i}_reduced |wc -l` -gt 1 ]; then 
-	sed '1d' $SAMPLES_DIR/vbsamples_${i}_reduced >> $SAMPLES_DIR/vbsamples
+ if [ `cat $SAMPLES_DIR/vbsamples${i}_reduced |wc -l` -gt 1 ]; then 
+	sed '1d' $SAMPLES_DIR/vbsamples${i}_reduced >> $SAMPLES_DIR/vbsamples
  fi
 
 done

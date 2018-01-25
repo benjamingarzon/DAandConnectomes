@@ -1,0 +1,11 @@
+Mu	Sigma
+intercept_muc_mu 	0	1
+intercept_muc_sigma	-2	1
+slope_muc_mu	0	0.01
+slope_muc_sigma	-5	1
+log_intercept_sigmac_mu	-2	 2
+log_intercept_sigmac_sigma	-2	1
+log_slope_sigmac_mu	0	0.01
+log_slope_sigmac_sigma	-5	1
+
+

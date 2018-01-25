@@ -77,8 +77,8 @@ stan_data = list(S = length(age.shifted),
                  age = as.numeric(age.shifted),
                  priors = priors)
 
-ITERS=3250
-WARMUP=3000 
+ITERS=5250
+WARMUP=5000 
 OUTPUT_SAMPLES=1000
 VBITERS=200000
 

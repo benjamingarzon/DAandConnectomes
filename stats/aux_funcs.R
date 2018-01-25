@@ -1,10 +1,9 @@
-#install.packages("ppcor", repos="http://cran.us.r-project.org")
+# functions for analysis
 
 library(R.matlab)
 library(pracma)
 library(reshape)
 library(dplyr)
-#library(rstan)
 library(ggplot2)
 library(data.table)
 library(abind)
@@ -12,20 +11,21 @@ library(ppcor)
 library(yhat)
 library(mclust)
 library(LSD)
-#library(interplot)
 library(foreach)
 library(doMC)
 library(RColorBrewer)
-#library(lmerTest)
-#library(sem)
 library(mvtnorm)
 library(parallel)
 library(mice)
+#library(rstan)
 #library(caret)
 #library(glmnet)
 
 N_CORES = 10
 registerDoMC(cores=20)
+
+
+# define palettes
 
 MYPALETTE=brewer.pal(11, "Spectral")[seq(11, 1, -1)]# colorspace::diverge_hsv(15, power=2)
 #CLUSPAL = c("#00FFFFFF", "#FFFF00FF", "#2A2A2A", "#FF0000FF", "#00FF00FF", "#0000FFFF")
@@ -694,11 +694,8 @@ plot_mds = function(FC, group){
   x2 = mds$points[, 2]
   par(mar=c(8,8,5,5), mgp = c(4, 2, 0))
   
-#  plot(x1, x2, pch = ifelse(group=="Young", 21, 24), xaxt='n', yaxt='n', ann=FALSE, bty='n', cex=4)
-#  plot(x1, x2, pch = ifelse(group=="Young", 21, 24), xlab='Dimension 1', ylab='Dimension 2', cex=4, bg= 'grey50', lwd= 3)
   plot(x1, x2, pch = ifelse(group=="Young", 2, 1), xlab='Dimension 1', ylab='Dimension 2', cex = 4, cex.lab = 3, cex.axis = 3, lwd = 11)
   
-#  legend("bottomleft", legend=c("Younger", "Older"), pch =c(21, 24), pt.bg= 'grey50', cex = CEX_LAB)
   legend("bottomleft", legend=c("Younger", "Older"), pch = c(2, 1), cex = CEX_LAB + 2, lwd = 11, lty = 0)
   
 }
@@ -784,7 +781,6 @@ plot_connection_removal = function(FC.ordered, values, conn.order, group1, group
   axis(4, cex.axis=CEX_AXIS) 
   mtext(ylabel,side=4,line=4, col="green",  cex=CEX_LAB)
   
-  #legend("topright", legend=c("Ordered","Shuffled"), fill=c("red", "blue"), cex=CEX_LEG)
 }
 
 plot_connectome_removal = function(input_file, demo, conn.order.mu, conn.order.sigma, values_mu, values_sigma, lim.muc = length(conn.order.mu), lim.sigmac = length(conn.order.sigma), figname="FigureRemoval") {
@@ -823,237 +819,6 @@ plot_connectome_removal = function(input_file, demo, conn.order.mu, conn.order.s
   save_fig(figname=paste0(figname,"d"), res=BWRES)
   par(mar=c(8,8,5,5), mgp=c(4,1,0))
   plot_connection_removal(FC.ordered, values_sigma, conn.order.sigma, 'Old', 'Old', expression("Ordering by " * beta[sigma] * ", Older-Older"), group.ordered, expression(""*beta[sigma]*""), lim= lim.sigmac)
-  
-}
-
-associate_cognition = function(input_file, demo, MODULES_FILE_NET, MODULES_FILE_MNI, test, permute=FALSE, beta_mu=NULL, beta_sigma=NULL, alpha_mu=NULL){
-  
-  Conn_info = readMat(input_file)
-  labels = unlist(Conn_info$labels)
-  
-  subjects_FC = unlist(Conn_info$subjects)
-  FC.all = data.frame(Conn_info$merged.matrices.mat)
-  
-  vars = colnames(FC.all)
-  n_conn = length(vars)
-  FC.all$Subject = subjects_FC
-  
-  data = merge(FC.all, demo, by="Subject")
-  X = data
-  
-  FC.all = data[, vars]
-  FC = X[,vars]
-  
-  age = X$age
-  group = X$class
-  cogscore = X[, test]
-  
-  if(permute) {
-    set.seed(42)
-    cogscore = sample(cogscore)
-    
-  }
-  
-  # find WM network 
-  load(MODULES_FILE_NET)
-  WMROIs = cogweights.all[rownames(cogweights.all)=='Cognition.Memory.Working', ] > 0
-  
-  WMnetwork = outer(WMROIs, WMROIs, FUN="|")
-  WMnetwork = WMnetwork[valid.indices, valid.indices]
-  WMnetwork = squareform2(WMnetwork)
-  
-  sel = (WMnetwork > 0)
-  
-  cors.young = atanh(apply(FC[group=="Young", sel], 2, function(x) pcor.test(x, cogscore[group=="Young"], age[group=="Young"])$estimate))
-  cors.old = atanh(apply(FC[group=="Old", sel], 2, function(x) pcor.test(x, cogscore[group=="Old"], age[group=="Old"])$estimate))
-  
-  cors = c(cors.young, cors.old)
-  
-  association.score.old = association.score.young = sel
-  association.score.young[sel] = cors.young
-  association.score.old[sel] = cors.old
-  association.score = c(association.score.young, association.score.old)
-  q.beta_mu = quantile(beta_mu, c(.2, .8))
-  q.beta_sigma = quantile(beta_sigma, c(.2, .8))
-  
-  ex1 = which(beta_mu > q.beta_mu[2] & beta_sigma > q.beta_sigma[2] & alpha_mu > 0 & sel) 
-  ex2 = which(beta_mu < q.beta_mu[1] & beta_sigma > q.beta_sigma[2] & alpha_mu > 0 & sel)
-  ex3 = which(beta_mu > q.beta_mu[2] & beta_sigma < q.beta_sigma[1] & alpha_mu > 0 & sel)
-  ex4 = which(beta_mu < q.beta_mu[1] & beta_sigma < q.beta_sigma[1] & alpha_mu > 0 & sel)
-  
-  indices = c(ex1, ex2, ex3, ex4)
-  clus = c(rep(1, length(ex1)), rep(2, length(ex2)), rep(3, length(ex3)), rep(4, length(ex4)))
-  colors = c("red", "blue", "green", "orange")
-  young.means = aggregate(association.score.young[indices], by = list(clus), FUN=mean)
-  old.means = aggregate(association.score.old[indices], by = list(clus), FUN=mean)
-  
-  #print(young.means)
-  
-  save_fig()
-  par(mfrow=c(1,1))
-  plot(jitter(clus, factor=.7)+.25, association.score.young[indices], pch=20, col = colors[clus], xlab="", ylab="Association with WM score", xlim=c(0.5, 4.5), ylim = c(-.7, .7) , cex=0.8) 
-  points(jitter(clus, factor= .7)-.25, association.score.old[indices], pch=17, col = colors[clus] , cex=0.8) 
-  points(seq(4) - .25, young.means$x, col = "black", cex = 4, pch=3)
-  points(seq(4) + .25, old.means$x, col = "black", cex = 4, pch=3)
-  
-  print(sum(sel))
-  association.score[!sel] = NA
-  
-  #save_fig(res=CRES)
-  #plot_adj(get_adj(WMnetwork, MODULES_FILE_MNI), MODULES_FILE_MNI, lim = 1)
-  
-  #save_fig()
-  #association.score.adj = get_adj(association.score, MODULES_FILE_MNI)
-  #plot_adj(association.score.adj, MODULES_FILE_MNI) 
-  
-  
-  return(association.score)
-  
-}
-
-associate_cognition_component = function(input_file, demo, MODULES_FILE_NET, MODULES_FILE_MNI, test, permute=FALSE, beta_mu=NULL, beta_sigma=NULL, comp, thr){
-  
-  Conn_info = readMat(input_file)
-  labels = unlist(Conn_info$labels)
-  
-  subjects_FC = unlist(Conn_info$subjects)
-  FC.all = data.frame(Conn_info$merged.matrices.mat)
-  
-  vars = colnames(FC.all)
-  n_conn = length(vars)
-  FC.all$Subject = subjects_FC
-  
-  data = merge(FC.all, demo, by="Subject")
-  X = data
-  
-  FC.all = data[, vars]
-  FC = X[,vars]
-  
-  age = X$age
-  group = X$class
-  cogscore = X[, test]
-  
-  if(permute) {
-    set.seed(42)
-    cogscore = sample(cogscore)
-    
-  }
-  
-  #comp[is.na(comp)]=0
-  comp = comp[valid.indices, valid.indices]
-  
-  sel = (squareform2(comp) > thr)
-  
-  print(sum(sel, na.rm=T))
-  
-  cors = c(atanh(apply(FC[group=="Young", sel], 2, function(x) pcor.test(x, cogscore[group=="Young"], age[group=="Young"])$estimate)),
-           atanh(apply(FC[group=="Old", sel], 2, function(x) pcor.test(x, cogscore[group=="Old"], age[group=="Old"])$estimate))
-  )
-  sel = c(sel, sel)
-  association.score = sel
-  association.score[sel] = cors
-  
-  association.score[!sel] = NA
-  
-  return(association.score)
-  
-}
-
-associate_cognition_modules_2groups = function(input_file, demo, test, permute=FALSE, beta_mu=NULL, beta_sigma=NULL, alpha_mu=NULL, modules_file){
-  
-  Conn_info = readMat(input_file)
-  labels = unlist(Conn_info$labels)
-  
-  subjects_FC = unlist(Conn_info$subjects)
-  FC.all = data.frame(Conn_info$merged.matrices.mat)
-  
-  vars = colnames(FC.all)
-  n_conn = length(vars)
-  FC.all$Subject = subjects_FC
-  
-  data = merge(FC.all, demo, by="Subject")
-  
-  X = data
-  
-  # balance the groups
-  min_n = min(table(X$class))
-  which.old = which(X$class=='Old')
-  which.young = which(X$class=='Young')
-  which.balanced = sort(c(sample(which.old, min_n), sample(which.young, min_n)))
-#  X = X[which.balanced, ]
-
-  FC.all = data[, vars]
-  FC = X[,vars]
-  
-  age = X$age
-  group = X$class
-  cogscore = X[, test]
-
-  if(permute) {
-    set.seed(42)
-    cogscore = sample(cogscore)
-    
-  }
-  
-  load(modules_file)
-  WMnets = (cogICNs[rownames(cogICNs)=='Cognition.Memory.Working', ] > 0)
-  
-  WMnetwork = drop(outer(WMnets, WMnets, FUN="|"))
-
-  sel = c(squareform2(WMnetwork), diag(WMnetwork))
-
-  cors.young = atanh(apply(FC[group=="Young", ], 2, function(x) pcor.test(x, cogscore[group=="Young"], age[group=="Young"])$estimate))
-  cors.old = atanh(apply(FC[group=="Old", ], 2, function(x) pcor.test(x, cogscore[group=="Old"], age[group=="Old"])$estimate))
-  
-  cors.young[!sel] = NA
-  cors.old[!sel] = NA
-  
-  cors = c(cors.young, cors.old)
-  association.score = c(cors.young, cors.old)
-  
-  cors.young.adj = get_adj_modules(cors.young, modules_file)
-  cors.old.adj = get_adj_modules(cors.old, modules_file)
-  
-  save_fig(res=CRES)
-  plot_matrix(cors.young.adj)
-  save_fig(res=CRES)
-  plot_matrix(cors.old.adj)
-  
-  q.beta_mu = quantile(beta_mu, c(.2, .8))
-  q.beta_sigma = quantile(beta_sigma, c(.2, .8))
-  
-  ex1 = which(beta_mu > q.beta_mu[2] & beta_sigma > q.beta_sigma[2] & sel) # & alpha_mu > 0 
-  ex2 = which(beta_mu < q.beta_mu[1] & beta_sigma > q.beta_sigma[2] & sel)
-  ex3 = which(beta_mu > q.beta_mu[2] & beta_sigma < q.beta_sigma[1] & sel)
-  ex4 = which(beta_mu < q.beta_mu[1] & beta_sigma < q.beta_sigma[1] & sel)
-  
-  indices = c(ex1, ex2, ex3, ex4)
-  clus = c(rep(1, length(ex1)), rep(2, length(ex2)), rep(3, length(ex3)), rep(4, length(ex4)))
-  colors = c("red", "blue", "green", "orange")
-  young.means = aggregate(cors.young[indices], by = list(clus), FUN=mean)
-  old.means = aggregate(cors.old[indices], by = list(clus), FUN=mean)
-  
-  print(young.means)
-  
-  save_fig()
-  par(mfrow=c(1,1))
-  plot(jitter(clus, factor=.7) - .25, cors.young[indices], pch=20, col = colors[clus], xlab="", ylab="Association with WM score", xlim=c(0.5, 4.5), ylim = c(-.7, .7) , cex=0.8) 
-  points(jitter(clus, factor= .7) + .25, cors.old[indices], pch=17, col = colors[clus] , cex=0.8) 
-  points(seq(4) - .25, young.means$x, col = "black", cex = 4, pch=3)
-  points(seq(4) + .25, old.means$x, col = "black", cex = 4, pch=3)
-  
-  #print(sum(sel))
-  #association.score[!sel] = NA
-  
-  #save_fig(res=CRES)
-  #plot_adj(get_adj(WMnetwork, MODULES_FILE_MNI), MODULES_FILE_MNI, lim = 1)
-  
-  #save_fig()
-  #association.score.adj = get_adj(association.score, MODULES_FILE_MNI)
-  #plot_adj(association.score.adj, MODULES_FILE_MNI) 
-  
-  
-  return(association.score)
   
 }
 
@@ -1113,7 +878,6 @@ normal_pattern_sim = function(input_file, demo, test, permute=FALSE, beta_mu=NUL
 #                     age=age[group=="Old"], combined=cogscore[group=="Old"]))
     return(cortest)
 }
-
 
 associate_cognition_modules = function(input_file, demo, test, permute=FALSE, beta_mu=NULL, beta_sigma=NULL, alpha_mu=NULL, modules_file){
   
@@ -1191,7 +955,6 @@ associate_cognition_modules = function(input_file, demo, test, permute=FALSE, be
   
 }
 
-
 model.cognitive.association = function(association.score, slope_muc, log_slope_sigmac, figname, intercept_muc=NULL, log_intercept_sigmac=NULL, plotme = F){
   
   log_slope_sigmac.scaled = scale(log_slope_sigmac, scale=TRUE)
@@ -1205,32 +968,13 @@ model.cognitive.association = function(association.score, slope_muc, log_slope_s
   alpha_sigma = as.numeric(log_intercept_sigmac.scaled)
   alpha_mu = as.numeric(intercept_muc.scaled)
   
-#   save_fig()
-#   par(mfrow=c(3,1))
-# #  plot(as.factor(ifelse(group==1, "Younger", "Older")), association.score, ylim=c(-.3, .3))
-#   hist(association.score, 100)
-#   heatscatter(slope_muc, association.score, cex = .5, main="Older")
-#   heatscatter(log_slope_sigmac, association.score, cex = .5, main="Older")
   print(sum(!is.na(association.score)))
   model = lm(association.score ~ beta_mu + beta_sigma + alpha_mu + alpha_sigma )
-#  model = lm(association.score ~ beta_mu + beta_sigma + beta_mu*beta_sigma )
   
   print(summary(model))
   coefs = coef(summary(model))
-  #model = lm(association.score ~ beta_mu + beta_sigma )
-  
-  
-#   N=100
-#   seq_mu.scaled = seq(min(beta_mu, na.rm=TRUE), max(beta_mu, na.rm=TRUE), length.out=N)
-#   seq_sigma.scaled = seq(min(beta_sigma, na.rm=TRUE), max(beta_sigma, na.rm=TRUE), length.out=N)
-#   seq_mu  = seq_mu.scaled*attr(slope_muc.scaled,"scaled:scale") + attr(slope_muc.scaled,"scaled:center")
-#   seq_sigma  = seq_sigma.scaled*attr(log_slope_sigmac.scaled,"scaled:scale") + attr(log_slope_sigmac.scaled,"scaled:center")
-#   
-#   x = expand.grid(beta_mu=seq_mu.scaled, beta_sigma=seq_sigma.scaled)
-#   z = predict(model, x)
-#   x = expand.grid(beta_mu=seq_mu, beta_sigma=seq_sigma)
-#   d = data.frame(z=z, beta_mu = x$beta_mu, beta_sigma=x$beta_sigma)
-if (plotme){
+
+  if (plotme){
   
   save_fig(figname  = figname, res=CRES)
   
@@ -1295,11 +1039,6 @@ model.cognitive.association_2groups = function(association.score, slope_muc, log
   heatscatter(log_slope_sigmac, association.score[group==0], cex = .5, main="Older")
   heatscatter(slope_muc, association.score[group==1], cex = .5, main="Younger")
   heatscatter(log_slope_sigmac, association.score[group==1], cex = .5, main="Younger")
-  
-  
-  #model = lm(association.score ~ beta_mu * beta_sigma * as.factor(group))
-  #model = lm(association.score ~ beta_mu * as.factor(group) + beta_sigma* as.factor(group) + alpha_mu * as.factor(group) + alpha_sigma* as.factor(group))
-  #model = lm(association.score ~ 0 + alpha_mu + alpha_sigma)
   
   model = lm(association.score ~ beta_mu * as.factor(group) + beta_sigma* as.factor(group) + alpha_mu + alpha_sigma + beta_mu*beta_sigma* as.factor(group) )
   
@@ -2236,48 +1975,17 @@ analyze_motion = function(motion_dir, demo, figname){
   
 }
 
-do_crossvalidate = function(fold, data){
-  X = data$X
-  y = data$y
-  X.train = X[-fold, , drop=FALSE]
-  X.test = X[fold, , drop=FALSE]
-  y.train = y[-fold]  
-  y.test = y[fold]
-  
-  mod = train(X.train, y.train,  method = method, trControl = ctrl, tuneGrid=tuneGrid) 
-  #print(summary(mod))
-  pred = predict(mod, X.test)
-  RMSE = sqrt(mean((pred - y.test)^2 ))
-  
-  return(list(pred=pred, RMSE=RMSE, y.test = y.test, model=mod))
+
+lichtrubin <- function(p){
+  ## pools the p-values of a one-sided test according to the Licht-Rubin method
+  ## this method pools p-values in the z-score scale, and then transforms back 
+  ## the result to the 0-1 scale
+  ## Licht C, Rubin DB (2011) unpublished
+  z <- qnorm(p)  # transform to z-scale
+  num <- mean(z)
+  den <- sqrt(1 + var(z))
+  pnorm( num / den) # average and transform back
 }
-
-get_nspn_data = function(NSPN_FILE, modules_file){
-  nspn_info = readMat(NSPN_FILE)
-  load(modules_file)
-  FC.nspn.orig = data.frame(nspn_info$merged.matrices.mat)
-  FC.nspn = matrix(NA, nrow(FC.nspn.orig), (length(valid.indices)-1)*length(valid.indices)/2)
-  n_rois = dim(nspn_info$merged.matrices)[1]
-  
-  # sync nspn data with DAD's
-  for (i in seq(nrow(FC.nspn))){
-    print(i)
-    
-    M = matrix(NA, n_rois, n_rois)
-    M[nspn_info$valid.indices, nspn_info$valid.indices] = squareform(as.numeric(FC.nspn.orig[i, ]))
-    FC.nspn[i, ] = squareform2(M[valid.indices, valid.indices])
-  }
-  
-  return(FC.nspn)
-}
-
-corr_slope_distance = function(x, adj, dist.mat){ 
-  slope_muc.degree = compute_degree_kernel(adj, dist.mat, x[1], x[2])
-  #print(x)
-  cor.test(slope_muc.degree, slope_muc.PET)$estimate
-}
-
-
 
 
 

@@ -1,41 +1,32 @@
-rm(list=ls())
+# statistical analysis
 
-# remove nans from clustering!!
-# change number of samples in average_params_variability
-# OUTLIERS??
-# repassar scale
-# check that weights make sense
-# generar dades antigues, provar models, model comparison, reparametritzar, treure connexions
+rm(list=ls())
 
 # RUN SETUP SCRIPTS --------------------------------------- 
 
-
-setwd('~/Software/DAD/VariabilityAnalysis')
+setwd('~/Software/DAD/DAandConnectomes')
 source("./aux_funcs.R")
-#wideScreen()
-
 source("./compute_modules.R")
+setwd('~/Software/DAD/DAandConnectomes')
 
-setwd('~/Software/DAD/VariabilityAnalysis')
+# if not run
+#system("../model/run_all_models.sh", wait=FALSE)
+#source("../model/evaluate_models.R")
 
-#system("./run_all_models.sh", wait=FALSE)
-#source("./evaluate_models.R")
+# PATH DEFINITIONS --------------------------------------- 
 
-# DEFINITIONS --------------------------------------- 
+INPUT_FILE.TAB='~/Data/DAD/processed/TAB/Connectome0.3/zFC_all_150_0.3_TAB_valid.mat'
+INPUT_FILE.GNG='~/Data/DAD/processed/GNG/Connectome0.3/zFC_all_150_0.3_GNG_valid.mat'
+INPUT_FILE.RS='~/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS_valid.mat'
 
-INPUT_FILE.TAB='/home/ALDRECENTRUM/benjamin.garzon/Data/DAD/processed/TAB/Connectome0.3/zFC_all_150_0.3_TAB_valid.mat'
-INPUT_FILE.GNG='/home/ALDRECENTRUM/benjamin.garzon/Data/DAD/processed/GNG/Connectome0.3/zFC_all_150_0.3_GNG_valid.mat'
-INPUT_FILE.RS='/home/ALDRECENTRUM/benjamin.garzon/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS_valid.mat'
+MOTION_DIR.TAB='~/Data/DAD/processed/TAB/RealignParameter/'
+MOTION_DIR.GNG='~/Data/DAD/processed/GNG/RealignParameter/'
+MOTION_DIR.RS='~/Data/DAD/processed/RS/RealignParameter/'
 
-MOTION_DIR.TAB='/home/ALDRECENTRUM/benjamin.garzon/Data/DAD/processed/TAB/RealignParameter/'
-MOTION_DIR.GNG='/home/ALDRECENTRUM/benjamin.garzon/Data/DAD/processed/GNG/RealignParameter/'
-MOTION_DIR.RS='/home/ALDRECENTRUM/benjamin.garzon/Data/DAD/processed/RS/RealignParameter/'
+LABELS_FILE="~/Data/DAD/parcellations/shen/fconn_150_labels.txt"
 
-LABELS_FILE="/home/ALDRECENTRUM/benjamin.garzon/Data/DAD/parcellations/shen/fconn_150_labels.txt"
-
-#DEMO_FILE = '~/Data/DAD/behaviour/data_160415.csv'
 DEMO_FILE = '~/Data/DAD/behaviour/demo_data.csv'
-DISTANCE_FILE = '/home/ALDRECENTRUM/benjamin.garzon/Data/DAD/parcellations/shen/parc_shen_150.dist.csv'
+DISTANCE_FILE = '~/Data/DAD/parcellations/shen/parc_shen_150.dist.csv'
 
 labels = read.csv(LABELS_FILE, header=TRUE, sep='\t')
 
@@ -48,7 +39,7 @@ fig_count = 0
 load("~/Data/DAD/processed/analysis_variability/data.Rdata")
 demo = read.table(DEMO_FILE, header=TRUE)
 
-# clean cerebellum data!
+# remove cerebellum ROIS from analysis of PET data
 cerebellum_rois = which(labels$LabelMNI=='Cerebellum')
 means.PET$intercept_muc[cerebellum_rois] = means.PET$slope_muc[cerebellum_rois] = means.PET$log_intercept_sigmac[cerebellum_rois] = means.PET$log_slope_sigmac[cerebellum_rois] = NA
 
@@ -57,7 +48,6 @@ tabulate_demo(demo)
 tabulate_demo(demo, INPUT_FILE.GNG)
 tabulate_demo(demo, INPUT_FILE.TAB)
 tabulate_demo(demo, INPUT_FILE.GNG)
-
 
 # analyze motion
 params.TAB = analyze_motion(MOTION_DIR.TAB, demo, "motion.TAB")
@@ -74,6 +64,14 @@ t.test(params.TAB$mean.FD_Power_scrubbed, params.RS$mean.FD_Power_scrubbed)
 
 
 # COMPARISON BETWEEN PARAMETERS ----------------------
+
+save_fig(res=BWRES)
+#all_params = cbind(means.GNG$intercept_muc, means.GNG$slope_muc, exp(means.GNG$log_intercept_sigmac), exp(50*means.GNG$log_slope_sigmac) ) 
+all_params.GNG = cbind(means.GNG$intercept_muc, means.GNG$slope_muc, means.GNG$log_intercept_sigmac, means.GNG$log_slope_sigmac ) 
+
+colnames(all_params.GNG) = c("alpha_mu", "beta_mu", "alpha_sigma", "beta_sigma")
+pairs( all_params.GNG[seq(1, nrow(all_params.GNG), 10), ], diag.panel=panel.hist, labels=c(expression(alpha[mu]),  expression(beta[mu]),  expression(alpha[sigma]),  expression(beta[sigma])), pch=20, cex=1)
+cor(all_params.GNG)
 
 save_fig(res=BWRES)
 par(mfrow=c(3, 3), mar=c(8,8,5,5), mgp=c(4,1,0))
@@ -96,7 +94,7 @@ plot_correl(means.GNG$slope_muc, means.GNG$log_slope_sigmac, expression(beta[mu]
 plot_correl(means.TAB$slope_muc, means.TAB$log_slope_sigmac, expression(beta[mu] ~ "for FC (TAB)"), expression(beta[sigma] ~ "for FC (TAB)"), cex= 0.3)
 plot_correl(means.RS$slope_muc, means.RS$log_slope_sigmac, expression(beta[mu] ~ "for FC (RS)"), expression(beta[sigma] ~ "for FC (RS)"), cex= 0.3)
 
-# COMPARISON BETWEEN TASKS
+# COMPARISON BETWEEN TASKS ----------------------
 
 save_fig(res=BWRES)
 par(mfrow=c(2, 3), mar=c(8,8,5,5), mgp=c(4,1,0))
@@ -120,25 +118,13 @@ plot_correl(means.TAB$log_intercept_sigmac, means.RS$log_intercept_sigmac, expre
 plot_correl(means.RS$log_intercept_sigmac, means.GNG$log_intercept_sigmac, expression(alpha[sigma] ~ "for FC (RS)"), expression(alpha[sigma] ~ "for FC (GNG)"), cex= 0.3, asp=1)
 
 
+# REPRESENT PARAMETERS ----------------------
+# Represent parameters in a matrix
 
-# COMPARISON OF PARAMETERS
-
-save_fig(res=BWRES)
-#all_params = cbind(means.GNG$intercept_muc, means.GNG$slope_muc, exp(means.GNG$log_intercept_sigmac), exp(50*means.GNG$log_slope_sigmac) ) 
-all_params.GNG = cbind(means.GNG$intercept_muc, means.GNG$slope_muc, means.GNG$log_intercept_sigmac, means.GNG$log_slope_sigmac ) 
-
-colnames(all_params.GNG) = c("alpha_mu", "beta_mu", "alpha_sigma", "beta_sigma")
-pairs( all_params.GNG[seq(1, nrow(all_params.GNG), 10), ], diag.panel=panel.hist, labels=c(expression(alpha[mu]),  expression(beta[mu]),  expression(alpha[sigma]),  expression(beta[sigma])), pch=20, cex=1)
-cor(all_params.GNG)
-
-
-
-#represent parameters in a matrix
 slope_muc.GNG = means.GNG$slope_muc
 slope_muc.GNG[zeros.GNG$slope_muc] = NA
 log_slope_sigmac.GNG = means.GNG$log_slope_sigmac
 log_slope_sigmac.GNG[zeros.GNG$log_slope_sigmac] = NA
-
 
 slope_muc.GNG.adj = get_adj(slope_muc.GNG, MODULES_FILE_MNI, labels_file=LABELS_FILE)
 log_slope_sigmac.GNG.adj = get_adj(log_slope_sigmac.GNG, MODULES_FILE_MNI, labels_file=LABELS_FILE)
@@ -166,8 +152,7 @@ plot_adj(intercept_muc.GNG.adj, MODULES_FILE_20)
 save_fig(figname="FigureSuppBM20_GNG_intercept_sigma", res=CRES)
 plot_adj(log_intercept_sigmac.GNG.adj, MODULES_FILE_20) 
 
-
-# represent parameters of modules 
+# Represent parameters by modules 
 save_fig(res=CRES)
 plot_matrix(get_adj_modules(means.mod.20.GNG$intercept_muc, MODULES_FILE_20))
 save_fig(figname="FigureBetaMu_20_GNG", res=CRES)
@@ -176,7 +161,6 @@ save_fig(res=CRES)
 plot_matrix(get_adj_modules(exp(means.mod.20.GNG$log_intercept_sigmac), MODULES_FILE_20))
 save_fig(figname="FigureBetaSigma_20_GNG", res=CRES)
 plot_matrix(get_adj_modules(exp(means.mod.20.GNG$log_slope_sigmac*50), MODULES_FILE_20))
-
 
 # average parameters over matrices 
 
@@ -200,7 +184,6 @@ save_fig(figname="FigureSuppBM20_GNG_average_slope_mu", res=CRES)
 plot_matrix(slope_muc.GNG.adj.20)
 save_fig(figname="FigureSuppBM20_GNG_average_slope_sigma", res=CRES)
 plot_matrix(log_slope_sigmac.GNG.adj.20)
-
 
 # plot intra correlations
 dist.mat.orig = as.matrix(read.csv(DISTANCE_FILE, sep=' ', header=F))
@@ -248,7 +231,6 @@ plot_correl(diag(average.ICN.RS.20$slope_muc$means), diag(average.ICN.GNG.20$slo
 plot_correl(average.cog.RS.70$slope_muc$means, average.cog.TAB.70$slope_muc$means, expression(beta[mu] ~ "cog for FC (RS)"), expression(beta[mu] ~ "cog for FC (TAB)"), cex= 1, asp=1)
 plot_correl(diag(average.ICN.RS.20$slope_muc$means), diag(average.ICN.TAB.20$slope_muc$means), expression(beta[mu] ~ " ICN for FC (RS)"), expression(beta[mu] ~ " ICN for FC (TAB)"), cex= 1, asp=1)
 
-
 save_fig(res=BWRES)
 par(mfrow=c(3, 2), mar=c(8,8,5,5), mgp=c(4,1,0))
 plot_correl(average.cog.TAB.70$log_slope_sigmac$means, average.cog.GNG.70$log_slope_sigmac$means, expression(beta[sigma] ~ " cog for FC (TAB)"), expression(beta[sigma] ~ " cog for FC (GNG)"), cex= 1, asp=1)
@@ -293,7 +275,6 @@ log_intercept_sigmac.RS.adj = get_adj(log_intercept_sigmac.RS, MODULES_FILE_20, 
 slope_muc.RS.adj = get_adj(slope_muc.RS, MODULES_FILE_20, sort=TRUE, labels_file=LABELS_FILE)
 log_slope_sigmac.RS.adj = get_adj(log_slope_sigmac.RS, MODULES_FILE_20, sort=TRUE, labels_file=LABELS_FILE)
 
-
 intercept_muc.GNG.zeros.adj = get_adj(zeros.GNG$intercept_muc, MODULES_FILE_20, sort=TRUE, labels_file=LABELS_FILE)
 
 intercept_muc.GNG.degree = compute_degree(intercept_muc.GNG.adj)
@@ -311,8 +292,6 @@ log_intercept_sigmac.RS.degree = compute_degree(log_intercept_sigmac.RS.adj)
 slope_muc.RS.degree = compute_degree(slope_muc.RS.adj)
 log_slope_sigmac.RS.degree = compute_degree(log_slope_sigmac.RS.adj)
 
-
-
 #slope_muc.TAB.degree = compute_degree(slope_muc.TAB.adj)
 #log_slope_sigmac.TAB.degree = compute_degree(log_slope_sigmac.TAB.adj)
 
@@ -327,7 +306,6 @@ log_intercept_sigmac.VBM = order_vals(means.VBM$log_intercept_sigmac, MODULES_FI
 log_slope_sigmac.PET = order_vals(means.PET$log_slope_sigmac, MODULES_FILE_20)
 log_slope_sigmac.VBM = order_vals(means.VBM$log_slope_sigmac, MODULES_FILE_20)
 
-
 # CORRELATIONS BETWEEN PET AND VBM PARAMETERS
 all_params.PET = data.frame(alpha_mu=intercept_muc.PET, beta_mu=slope_muc.PET, alpha_sigma=log_intercept_sigmac.PET, beta_sigma=log_slope_sigmac.PET ) 
 all_params.PET = subset(all_params.PET, !is.na(slope_muc.PET))
@@ -335,71 +313,7 @@ all_params.VBM = data.frame(alpha_mu=means.VBM$intercept_muc, beta_mu=means.VBM$
 cor(all_params.PET)
 cor(all_params.VBM)
 
-
-# CORRELATIONS BETWEEN FC PARAMETERS AND DISTANCE
-save_fig(res=CRES)
-par(mar=c(8,8,5,5), mgp=c(4,1,0))
-heatscatter(squareform2(dist.mat), squareform2(intercept_muc.GNG.adj), xlab="Distance (mm)", ylab=expression(alpha[mu]))
-
-intercept_muc.GNG.adj.pos = intercept_muc.GNG.adj.neg = intercept_muc.GNG.adj
-slope_muc.GNG.adj.pos = slope_muc.GNG.adj.neg = slope_muc.GNG.adj
-log_slope_sigmac.GNG.adj.pos = log_slope_sigmac.GNG.adj.neg = log_slope_sigmac.GNG.adj
-
-intercept_muc.GNG.adj.neg[intercept_muc.GNG.zeros.adj | (intercept_muc.GNG.adj > 0)] = NA
-intercept_muc.GNG.adj.pos[intercept_muc.GNG.zeros.adj | (intercept_muc.GNG.adj < 0)] = NA
-slope_muc.GNG.adj.neg[intercept_muc.GNG.zeros.adj | (intercept_muc.GNG.adj > 0)] = NA
-slope_muc.GNG.adj.pos[intercept_muc.GNG.zeros.adj | (intercept_muc.GNG.adj < 0)] = NA
-log_slope_sigmac.GNG.adj.neg[intercept_muc.GNG.zeros.adj | (intercept_muc.GNG.adj > 0)] = NA
-log_slope_sigmac.GNG.adj.pos[intercept_muc.GNG.zeros.adj | (intercept_muc.GNG.adj < 0)] = NA
-
-save_fig(res=CRES)
-par(mfrow=c(3, 2), mar=c(6,6,4,3), mgp=c(4,1,0))
-heatscatter(squareform2(dist.mat), squareform2(intercept_muc.GNG.adj.neg), xlab="Distance (mm)", ylab=expression(beta[sigma]), main="Negative baseline", ylim=c(-.5, 0.5))
-heatscatter(squareform2(dist.mat), squareform2(intercept_muc.GNG.adj.pos), xlab="Distance (mm)", ylab=expression(beta[sigma]), main="Positive baseline", ylim=c(-0.5, 0.5))
-
-heatscatter(squareform2(dist.mat), squareform2(slope_muc.GNG.adj.neg), xlab="Distance (mm)", ylab=expression(beta[mu]), main="Negative baseline", ylim=c(-0.005, 0.005))
-l = loess( squareform2(slope_muc.GNG.adj.neg) ~ squareform2(dist.mat), span=.6)
-points(squareform2(dist.mat), predict( l,  squareform2(dist.mat)), pch=20)
-
-heatscatter(squareform2(dist.mat), squareform2(slope_muc.GNG.adj.pos), xlab="Distance (mm)", ylab=expression(beta[mu]), main="Positive baseline", ylim=c(-0.005, 0.005))
-l = loess( squareform2(slope_muc.GNG.adj.pos) ~ squareform2(dist.mat), pch=20, span=.6)
-points(squareform2(dist.mat), predict( l,  squareform2(dist.mat)))
-
-#save_fig(res=CRES, width=13)
-#par(mfrow=c(1, 2), mar=c(6,4,4,3), mgp=c(4,1,0))
-heatscatter(squareform2(dist.mat), squareform2(log_slope_sigmac.GNG.adj.neg), xlab="Distance (mm)", ylab=expression(beta[sigma]), main="Negative baseline", ylim=c(0.002, 0.007))
-heatscatter(squareform2(dist.mat), squareform2(log_slope_sigmac.GNG.adj.pos), xlab="Distance (mm)", ylab=expression(beta[sigma]), main="Positive baseline", ylim=c(0.002, 0.007))
-
-cor.test(squareform2(dist.mat), squareform2(slope_muc.GNG.adj.neg))
-cor.test(squareform2(dist.mat), squareform2(slope_muc.GNG.adj.pos))
-cor.test(squareform2(dist.mat), squareform2(intercept_muc.GNG.adj))
-cor.test(squareform2(dist.mat), squareform2(log_slope_sigmac.GNG.adj.neg))
-cor.test(squareform2(dist.mat), squareform2(log_slope_sigmac.GNG.adj.pos))
-
-x = scale(squareform2(slope_muc.GNG.adj.pos))
-y = scale(squareform2(intercept_muc.GNG.adj.pos))
-z = scale(squareform2(dist.mat))
-
-# INDEPENDENT EFFECTS OF alpha_mu and distance!
-summary(lm(x ~ y + z ))
-
-x = scale(squareform2(slope_muc.GNG.adj.neg))
-y = scale(squareform2(intercept_muc.GNG.adj.neg))
-z = scale(squareform2(dist.mat))
-
-# INDEPENDENT EFFECTS OF alpha_mu and distance!
-summary(lm(x ~ y + z ))
-
-
-
-# intra vs inter speed
-x = average.ICN.GNG$slope_muc$means
-x[average.ICN.GNG$intercept_muc$means < 0] = NA
-segreg = rbind(data.frame(beta_mu = squareform2(x), type="inter"), data.frame(beta_mu = diag(x), type="intra") )
-t.test(beta_mu ~ type, data = segreg)
-
-
-# ASSOCIATIONS WITH PET AND VBM
+# ASSOCIATIONS OF FC WITH PET AND VBM
 
 #PET
 save_fig(figname="Figure3_GNG_f_BP", res=BWRES)
@@ -424,9 +338,6 @@ plot_correl(slope_muc.GNG.degree, slope_muc.PET, expression("Average nodal " ~ b
 plot_correl(slope_muc.TAB.degree, slope_muc.PET, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for BP"), !is.na(slope_muc.GNG.degree * slope_muc.PET.subset))
 plot_correl(slope_muc.RS.degree, slope_muc.PET, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for BP"), !is.na(slope_muc.GNG.degree * slope_muc.PET.subset))
 
-
-
-
 #VBM
 save_fig(figname="Figure3_GNG_f_VBM", res=BWRES)
 par(mar=c(8,8,5,5), mgp=c(4,1,0))
@@ -435,8 +346,6 @@ plot_correl(slope_muc.GNG.degree, slope_muc.VBM, expression("Average nodal " ~ b
 save_fig(figname="Figure3_GNG_f_VBM_sigma", res=BWRES)
 par(mar=c(8,8,5,5), mgp=c(4,1,0))
 plot_correl(log_slope_sigmac.GNG.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMV"), !is.na(log_slope_sigmac.GNG.degree))
-
-
 
 save_fig(figname="Figure3_PET_VBM_GNG", res=BWRES)
 par(mfrow =c(2,2), mar=c(8,8,5,5), mgp=c(4,1,0))
@@ -478,8 +387,6 @@ summary(lm(log_slope_sigmac.RS.degree ~ scale(log_slope_sigmac.PET) + scale(log_
 # PET controlling for intercept of PET
 summary(lm(slope_muc.GNG.degree ~ slope_muc.PET + intercept_muc.PET))
 
-
-
 # correlation between PET and FC beta_mu weighted by distance
 
 cor.kernel = expand.grid(center = seq(15, 140 , 5), FWHM = seq(10, 400, 5))
@@ -491,8 +398,7 @@ myplot <- ggplot(cor.kernel, aes(x=center, y=FWHM, z=cor)) +
 save_fig(res=CRES)
 print(myplot)
 
-
-# matrices and connectomes
+# REPRESENT SIMILARITIES
 save_fig(figname="Figure1b", res=CRES)
 plot_connectome_similarities(INPUT_FILE.GNG, demo)
 save_fig()
@@ -511,42 +417,10 @@ plot_connectome_similarities(INPUT_FILE.RS, demo, plot_mds=TRUE)
 
 #COGNITIVE SCORES
 
-# DOPAMINE AND COGNITION????????????
-
 # plot them
 #plot(updating ~ age, data=demo, xlab = "Age", ylab = "Score", pch=20, cex.axis=CEX_AXIS, cex.lab=CEX_LAB, cex=2)
 
-
-# if (F){
-# demo.clean=subset(demo, !Subject %in% outliers)
-#   
-# pca = princomp(demo.clean[demo.clean$class=='Old', c("updating", "n_back")], cor = T)
-# var = pca$sdev**2/sum(pca$sdev**2)
-# 
-# demo$combined = 0
-# demo$combined[demo$class=='Old' & ! demo$Subject %in% outliers] = pca$scores[,"Comp.1"]
-# # impute this subject
-# demo$combined[demo$Subject %in% outliers] = loadings(pca)["updating","Comp.1"]*(demo$updating[demo$Subject %in% outliers]-pca$center[1])/pca$scale[1]*2
-# demo.clean = demo
-# } else {
-# demo.clean = demo
-# demo.clean$n_back[ demo.clean$Subject %in% outliers ] = mean(demo.clean$n_back[demo.clean$class == 'Old' & !demo.clean$Subject %in% outliers ])
-# pca = princomp(demo.clean[demo.clean$class=='Old', c("updating", "n_back")], cor = T)
-# demo.clean$combined = 0
-# demo.clean$combined[demo$class=='Old'] = pca$scores[,"Comp.1"]
-# }
-
-
-#plot(pca$scores[,"Comp.1"],
-#loadings(pca)["updating","Comp.1"]*(demo.clean$updating[demo.clean$class=='Old']-pca$center[1])/pca$scale[1]+
-#loadings(pca)["n_back","Comp.1"]*(demo.clean$n_back[demo.clean$class=='Old']-pca$center[2])/pca$scale[2]
-#)
-
-# demo.clean=subset(demo, !Subject %in% outliers)
-#   
-# pca = princomp(demo.clean[demo.clean$class=='Old', c("updating", "n_back")], cor = T)
-# var = pca$sdev**2/sum(pca$sdev**2)
-
+# create a WM score
 estimates = p.values = coefs.Estimate = coefs.p = NULL
 summary(demo[, c("updating", "n_back")])
 outliers = c("D84")
@@ -569,7 +443,7 @@ demo.imputed = mice(demo.clean[, c("combined", "updating", "n_back", "age", "sex
 
 mycombined = 0
 
-for (m in seq(m_imputations)){
+for (m in seq(m_imputations)){  # repeat for the number of imputations
   demo.clean = demo
   demo.clean[c("combined", "updating", "n_back", "age", "sex")] = complete(demo.imputed, m)
   mycombined = demo.clean$combined + mycombined
@@ -577,28 +451,8 @@ for (m in seq(m_imputations)){
   print("Cognitive associations")
   test = "combined"
 
-# ASSOCIATION SCORES BY CONNECTIONS
-# association.score.GNG = associate_cognition(INPUT_FILE.GNG, demo.clean, MODULES_FILE_70, MODULES_FILE_MNI, test, permute=FALSE, 
-#                                            beta_mu=means.GNG$slope_muc, beta_sigma=means.GNG$log_slope_sigmac, alpha_mu = means.GNG$intercept_muc)
-# association.score.GNG[ rep(means.GNG$intercept_muc < 0, 2) |  rep(zeros.GNG$intercept_muc, 2) ] = NA
-# model.cognitive.association(association.score.GNG, means.GNG$slope_muc, means.GNG$log_slope_sigmac, 
-#                             figname="Figure4b_GNG", means.GNG$intercept_muc, means.GNG$log_intercept_sigmac)
-# 
-# association.score.TAB = associate_cognition(INPUT_FILE.TAB, demo.clean, MODULES_FILE_70, MODULES_FILE_MNI, test, permute=FALSE, beta_mu=means.TAB$slope_muc, beta_sigma=means.TAB$log_slope_sigmac,
-#                                             alpha_mu = means.TAB$intercept_muc)
-# association.score.TAB[ rep(means.TAB$intercept_muc < 0, 2) |  rep(zeros.TAB$intercept_muc, 2) ] = NA
-# model.cognitive.association(association.score.TAB, means.TAB$slope_muc, means.TAB$log_slope_sigmac, 
-#                            figname="Figure4b_TAB", means.TAB$intercept_muc, means.TAB$log_intercept_sigmac)
-# 
-# association.score.RS = associate_cognition(INPUT_FILE.RS, demo.clean, MODULES_FILE_70, MODULES_FILE_MNI, test, permute=FALSE, beta_mu=means.RS$slope_muc, beta_sigma=means.RS$log_slope_sigmac,
-#                                            alpha_mu = means.RS$intercept_muc)
-# association.score.RS[ rep(means.RS$intercept_muc < 0, 2) |  rep(zeros.RS$intercept_muc, 2) ] = NA
-# model.cognitive.association(association.score.RS, means.RS$slope_muc, means.RS$log_slope_sigmac, 
- #                            figname="Figure4b_RS", means.RS$intercept_muc, means.RS$log_intercept_sigmac)
 
-
-
-# ASSOCIATION SCORES BY MODULES
+# ASSOCIATION SCORES AND FC
 # 20 
 similarity.score.mod.20.GNG = normal_pattern_sim(INPUT_FILE.GNG.mod.20, demo.clean, beta_mu= means.mod.20.GNG$slope_muc, 
                                                            beta_sigma = means.mod.20.GNG$log_slope_sigmac, 
@@ -611,22 +465,6 @@ similarity.score.mod.20.TAB = normal_pattern_sim(INPUT_FILE.TAB.mod.20, demo.cle
 similarity.score.mod.20.RS = normal_pattern_sim(INPUT_FILE.RS.mod.20, demo.clean, beta_mu= means.mod.20.RS$slope_muc, 
                                                 beta_sigma = means.mod.20.RS$log_slope_sigmac, 
                                                 test, modules_file = MODULES_FILE_20)
-#  similarity.score.mod.20 = merge(similarity.score.mod.20.GNG, similarity.score.mod.20.TAB, by =c("Subject", "age","combined"),
-#                                  suffixes = c(".GNG", ".TAB"))
-#  
-#  similarity.score.mod.20 = merge(similarity.score.mod.20, similarity.score.mod.20.RS, by =c("Subject", "age","combined"),
-#                                  suffixes = c("", ".RS"))
-#  
-# pca.20 = princomp(cbind(similarity.score.mod.20$similarity.GNG, 
-#                         similarity.score.mod.20$similarity.TAB, 
-#                         similarity.score.mod.20$similarity.RS))
-# similarity.score.mod.20$similarity = pca.20$scores[, "Comp.1"]
-# 
-# 
-#  attach(similarity.score.mod.20)
-#  print(pcor.test(similarity, combined, age))
-# #plot(similarity.score.mod.20, combined[class=="Old"], pch = 20, cex = 0.5, ylab = "WM score", xlab = "Similarity" ) 
-#  detach(similarity.score.mod.20)
 
 
 similarity.score.mod.70.GNG = normal_pattern_sim(INPUT_FILE.GNG.mod.70, demo.clean, beta_mu= means.mod.70.GNG$slope_muc, 
@@ -641,19 +479,7 @@ similarity.score.mod.70.RS = normal_pattern_sim(INPUT_FILE.RS.mod.70, demo.clean
                                                 beta_sigma = means.mod.70.RS$log_slope_sigmac, 
                                                 test, modules_file = MODULES_FILE_70)
 
-# similarity.score.mod.70 = merge(similarity.score.mod.70.GNG, similarity.score.mod.70.TAB, by =c("Subject", "age","combined"),
-#                                 suffixes = c(".GNG", ".TAB"))
-# 
-# similarity.score.mod.70 = merge(similarity.score.mod.70, similarity.score.mod.70.RS, by =c("Subject", "age","combined"),
-#                                 suffixes = c("", ".RS"))
-# 
-# pca.70 = princomp(cbind(similarity.score.mod.70$similarity.GNG, 
-#                         similarity.score.mod.70$similarity.TAB, 
-#                         similarity.score.mod.70$similarity.RS))
-# similarity.score.mod.70$similarity = pca.70$scores[, "Comp.1"]
-# attach(similarity.score.mod.70)
-# print(pcor.test(similarity, combined, age))
-# detach(similarity.score.mod.70)
+# gather estimates
 estimates = rbind(estimates, 
                   c(similarity.score.mod.20.GNG$estimate, 
                     similarity.score.mod.20.TAB$estimate,
@@ -692,31 +518,25 @@ coefs.20.RS = model.cognitive.association(association.score.mod.20.RS, means.mod
                             figname="Figure4_RS_b_modules", means.mod.20.RS$intercept_muc, means.mod.20.RS$log_intercept_sigmac)
 
 
-#save_fig()
-
-#plot(c(association.score.mod.20.GNG, association.score.mod.20.TAB))
-
-
-
 # 70 
 association.score.mod.70.GNG = associate_cognition_modules(INPUT_FILE.GNG.mod.70, demo.clean, beta_mu= means.mod.70.GNG$slope_muc, 
                                                            beta_sigma = means.mod.70.GNG$log_slope_sigmac, 
                                                            test, modules_file = MODULES_FILE_70)
-#, permute=FALSE, beta_mu=means.GNG$slope_muc, beta_sigma=means.GNG$log_slope_sigmac, alpha_mu = means.GNG$intercept_muc)
+
 coefs.70.GNG = model.cognitive.association(association.score.mod.70.GNG, means.mod.70.GNG$slope_muc, means.mod.70.GNG$log_slope_sigmac, 
                             figname="Figure4_GNG_b_modules70", means.mod.70.GNG$intercept_muc, means.mod.70.GNG$log_intercept_sigmac)
 
 association.score.mod.70.TAB = associate_cognition_modules(INPUT_FILE.TAB.mod.70, demo.clean, beta_mu= means.mod.70.TAB$slope_muc, 
                                                            beta_sigma = means.mod.70.TAB$log_slope_sigmac,
                                                            test, modules_file = MODULES_FILE_70)
-#, permute=FALSE, beta_mu=means.GNG$slope_muc, beta_sigma=means.GNG$log_slope_sigmac, alpha_mu = means.GNG$intercept_muc)
+
 coefs.70.TAB = model.cognitive.association(association.score.mod.70.TAB, means.mod.70.TAB$slope_muc, means.mod.70.TAB$log_slope_sigmac, 
                             figname="Figure4_TAB_b_modules", means.mod.70.TAB$intercept_muc, means.mod.70.TAB$log_intercept_sigmac)
 
 association.score.mod.70.RS = associate_cognition_modules(INPUT_FILE.RS.mod.70, demo.clean, test, beta_mu= means.mod.70.RS$slope_muc, 
                                                           beta_sigma = means.mod.70.RS$log_slope_sigmac,
                                                           modules_file = MODULES_FILE_70)
-#, permute=FALSE, beta_mu=means.GNG$slope_muc, beta_sigma=means.GNG$log_slope_sigmac, alpha_mu = means.GNG$intercept_muc)
+
 coefs.70.RS = model.cognitive.association(association.score.mod.70.RS, means.mod.70.RS$slope_muc, means.mod.70.RS$log_slope_sigmac, 
                             figname="Figure4_RS_b_modules", means.mod.70.RS$intercept_muc, means.mod.70.RS$log_intercept_sigmac)
 
@@ -742,18 +562,6 @@ coefs.p = abind(coefs.p,
 } # end imputation
 
 
-lichtrubin <- function(p){
-  ## pools the p-values of a one-sided test according to the Licht-Rubin method
-  ## this method pools p-values in the z-score scale, and then transforms back 
-  ## the result to the 0-1 scale
-  ## Licht C, Rubin DB (2011) unpublished
-  z <- qnorm(p)  # transform to z-scale
-  num <- mean(z)
-  den <- sqrt(1 + var(z))
-  pnorm( num / den) # average and transform back
-}
-
-
 demo.clean$combined = mycombined/m_imputations
 
 colnames(coefs.Estimate) = colnames(coefs.p) = 
@@ -767,15 +575,12 @@ print(apply(coefs.p,  c(1, 2), lichtrubin))
 
 
 # 
-
 association.score.mod.20.GNG = associate_cognition_modules(INPUT_FILE.GNG.mod.20, demo.clean, beta_mu= means.mod.20.GNG$slope_muc, 
                                                            beta_sigma = means.mod.20.GNG$log_slope_sigmac, 
                                                            test, modules_file = MODULES_FILE_20)
 coefs.20.GNG = model.cognitive.association(association.score.mod.20.GNG, means.mod.20.GNG$slope_muc, means.mod.20.GNG$log_slope_sigmac, 
                                            figname="Figure4_GNG_b_modules20", means.mod.20.GNG$intercept_muc, means.mod.20.GNG$log_intercept_sigmac,
                                            plotme = T)
-
-
 
 association.score.mod.70.GNG = associate_cognition_modules(INPUT_FILE.GNG.mod.70, demo.clean, beta_mu= means.mod.70.GNG$slope_muc, 
                                                            beta_sigma = means.mod.70.GNG$log_slope_sigmac, 
@@ -786,26 +591,6 @@ coefs.70.GNG = model.cognitive.association(association.score.mod.70.GNG, means.m
                                            plotme =T) 
 
 
-
-# save_fig()
-# plot(association.score.mod.70.GNG, association.score.mod.70.TAB, xlab="Association score GNG", ylab="Association score TAB")
-# 
-# save_fig()
-# par(mfrow=c(1, 3))
-# plot(association.score.mod.70.GNG, pch = 20, cex= 0.2, ylim = c(-.7, .7))
-# plot(association.score.mod.70.TAB, pch = 20, cex= 0.2, ylim = c(-.7, .7))
-# plot(association.score.mod.70.RS,  pch = 20, cex= 0.2, ylim = c(-.7, .7))
-
-# do it again permuting the cognitive scores
-# print("Cognitive associations: permuted")
-# association.score.GNG = associate_cognition(INPUT_FILE.GNG, demo.clean, MODULES_FILE_70, MODULES_FILE_MNI, test, permute=TRUE, beta_mu=means.GNG$slope_muc, beta_sigma=means.GNG$log_slope_sigmac)
-# model.cognitive.association(association.score.GNG, means.GNG$slope_muc, means.GNG$log_slope_sigmac, figname="PermFigure4b_GNG")
-# 
-# association.score.TAB = associate_cognition(INPUT_FILE.TAB, demo.clean, MODULES_FILE_70, MODULES_FILE_MNI, test, permute=TRUE, beta_mu=means.TAB$slope_muc, beta_sigma=means.TAB$log_slope_sigmac)
-# model.cognitive.association(association.score.TAB, means.TAB$slope_muc, means.TAB$log_slope_sigmac, figname="PermFigure4b_TAB")
-# 
-# association.score.RS = associate_cognition(INPUT_FILE.RS, demo.clean, MODULES_FILE_70, MODULES_FILE_MNI, test, permute=TRUE, beta_mu=means.RS$slope_muc, beta_sigma=means.RS$log_slope_sigmac)
-# model.cognitive.association(association.score.RS, means.RS$slope_muc, means.RS$log_slope_sigmac, figname="PermFigure4b_RS")
 # DO PLOTS WITH AVERAGE VALUES
 
 save_fig(figname="Figure4a", res=BWRES)
@@ -822,15 +607,8 @@ arrows(x0=pca$center["updating"],
 legend("bottomleft", legend=c("Younger", "Older"), pch =c(2, 1), cex = CEX_LAB + 1, lwd = 11, lty = 0)
 dev.off()
 
-
-
-stophere
-
-# clustering
-# GNG
-#clusters = cluster_params_manual(means.GNG$slope_muc, means.GNG$log_slope_sigmac, zeros.GNG$slope_muc, zeros.GNG$log_slope_sigmac, pal= CLUSPAL, "Figure2a_GNG")
-#clusters = cluster_params_manual_inter(means.GNG$intercept_muc, means.GNG$slope_muc, means.GNG$log_slope_sigmac, zeros.GNG$intercept_muc, zeros.GNG$slope_muc, zeros.GNG$log_slope_sigmac, pal= CLUSPAL18, "Figure2a_GNG")
-
+# CLUSTERING CONNECTIONS
+#GNG
 clusters = cluster_params_2points(FC.GNG.mu.20$mean, FC.GNG.mu.70$mean, means.GNG$log_slope_sigmac, FC.GNG.mu.20$zeros, FC.GNG.mu.70$zeros, zeros.GNG$log_slope_sigmac, pal= CLUSPAL9, "Figure3_GNG-")
 
 clusters.adj = get_adj(clusters, MODULES_FILE_MNI)
@@ -864,20 +642,6 @@ save_fig(figname="Figure3d_RS", res=CRES)
 plot_pies(clusters.adj, MODULES_FILE_MNI, pal=CLUSPAL18) 
 
 
-#try with sigma
-#REMOVE UNNECESSARY FILES
-
-clusters = cluster_params_2points(FC.GNG.sigma.20$mean, FC.GNG.sigma.70$mean, means.GNG$log_slope_sigmac, FC.GNG.sigma.20$zeros, FC.GNG.sigma.70$zeros, zeros.GNG$log_slope_sigmac, pal= CLUSPAL9, "Figure3_GNG_sigma-")
-
-clusters.adj = get_adj(clusters, MODULES_FILE_MNI)
-clusters.adj[clusters.adj==0] = NA
-save_fig(figname = "Figure3c_GNG_sigma", res=CRES)
-plot_adj(clusters.adj, MODULES_FILE_MNI, lim = -1, pal=CLUSPAL18, nolegend=TRUE) 
-save_fig(figname="Figure3d_GNG_sigma", res=CRES)
-plot_pies(clusters.adj, MODULES_FILE_MNI, pal=CLUSPAL18) 
-
-
-
 # connection removal
 # restrict connections
 #GNG
@@ -899,7 +663,6 @@ plot_pies(clusters.adj, MODULES_FILE_MNI, pal=CLUSPAL18)
 #save_fig(figname="Figure2a-d_GNG", res=BWRES)
 
 conn.order.mu = order(abs(means.GNG$slope_muc), decreasing=TRUE)
-#conn.order.sigma = order(abs(means.GNG$log_slope_sigmac), decreasing=TRUE)
 conn.order.sigma = order(means.GNG$log_slope_sigmac, decreasing=TRUE)
 
 plot_connectome_removal(INPUT_FILE.GNG, demo, conn.order.mu, conn.order.sigma, abs(means.GNG$slope_muc), abs(means.GNG$log_slope_sigmac), figname = "Figure2_GNG-")
