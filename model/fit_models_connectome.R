@@ -77,8 +77,9 @@ stan_data = list(S = length(age.shifted),
                  age = as.numeric(age.shifted),
                  priors = priors)
 
-ITERS=5250
-WARMUP=5000 
+WARMUP=35000 
+ITERS=WARMUP + 500
+
 OUTPUT_SAMPLES=1000
 VBITERS=200000
 
@@ -87,9 +88,9 @@ if (USEMCMC==1) {
 # USE MCMC
 #  stan_control = list(adapt_delta=0.99,  stepsize = 0.01, max_treedepth = 15)
   stan_control = list(adapt_delta=0.99, stepsize = 0.01, max_treedepth = 15)
-
+  
   fit <- stan(file = stan_file, data = stan_data, iter = ITERS, chains = 4, pars = c("muc", "sigmac"), 
-  include = FALSE, warmup = WARMUP, sample_file=samples_file, control = stan_control)
+  include = FALSE, warmup = WARMUP, sample_file=samples_file, control = stan_control, thin = 2)
   #save(fit.FC, file="fit.FC.Rdata")
 } else {
 # USE ADVI

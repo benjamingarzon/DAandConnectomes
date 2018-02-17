@@ -17,7 +17,7 @@ library(RColorBrewer)
 library(mvtnorm)
 library(parallel)
 library(mice)
-#library(rstan)
+library(rstan)
 #library(caret)
 #library(glmnet)
 
@@ -49,11 +49,18 @@ CLUSPAL18 = rep(c("red", "green", "blue",
 BWRES=1200
 CRES=1200
 POINTSIZE=35
-CEX_AXIS=2
-CEX_LAB=2
+
+CEX_AXIS=2 + 1
+CEX_LAB=2 + 1
 CEX_NAMES=1.5
 CEX_LEG=2
 CEX_MAIN=2
+MYCEX = 3
+MYDEFAULTCEX = 3
+
+MYMGP = c(5, 1.5, 0)
+
+
 
 LWD=3
 FINELINE=.6
@@ -559,7 +566,7 @@ compute_degree_samples = function(X, modules_file, labels_file, modular=F){
   return(degree)
 }
 
-plot_correl = function(y, x, ylab, xlab, valid=abs(y)>=0, cex=1, asp = -1, right = F ){
+plot_correl = function(y, x, ylab, xlab, valid=abs(y)>=0, cex=MYDEFAULTCEX, asp = -1, right = F ){
   c = cor.test(x[valid], y[valid])
   r = format(round(c$estimate, 3), nsmall=3)
   plot(x[valid], y[valid], xlab=xlab, ylab=ylab, pch=20, cex=cex, cex.axis=CEX_AXIS, cex.lab=CEX_LAB, asp = asp, main="")
@@ -584,7 +591,7 @@ plot_correl = function(y, x, ylab, xlab, valid=abs(y)>=0, cex=1, asp = -1, right
   
   side = ifelse(right, "topright", "topleft")   
   
-  legend(side, legend = c( paste0('r=', r), paste0('p=', p)), bty="n", cex=CEX_LEG )
+  legend(side, legend = c( paste0('r=', r), paste0('p=', p)), bty="n", cex=CEX_LEG + 1)
   
 }
 
@@ -692,11 +699,11 @@ plot_mds = function(FC, group){
   mds = cmdscale(as.dist(1 - D), eig=T, k=2)
   x1 = mds$points[, 1]
   x2 = mds$points[, 2]
-  par(mar=c(8,8,5,5), mgp = c(4, 2, 0))
+  par(mar=c(8,8,5,5), mgp = c(5, 2, 0))
   
   plot(x1, x2, pch = ifelse(group=="Young", 2, 1), xlab='Dimension 1', ylab='Dimension 2', cex = 4, cex.lab = 3, cex.axis = 3, lwd = 11)
   
-  legend("bottomleft", legend=c("Younger", "Older"), pch = c(2, 1), cex = CEX_LAB + 2, lwd = 11, lty = 0)
+  legend("bottomleft", legend=c("Younger", "Older"), pch = c(2, 1), cex = CEX_LEG + 2, lwd = 11, lty = 0)
   
 }
 
@@ -771,7 +778,7 @@ plot_connection_removal = function(FC.ordered, values, conn.order, group1, group
     #image(apply(d.ordered.sampled, c(1, 2), mean), main=paste("Shuffled", p), zlim = conlims, asp = 1)
   }
   
-  plot(removed, var.ordered, type="b", col="red", lwd=3, pch=20, cex.axis=CEX_AXIS, cex.lab=CEX_LAB, cex.main = CEX_MAIN, ylim=c(0.3, 0.5),
+  plot(removed, var.ordered, type="b", col="red", lwd=3, pch=20, cex.axis=CEX_AXIS+1, cex.lab=CEX_LAB+2, cex.main = CEX_MAIN+2, ylim=c(0.3, 0.5),
        ylab="Average similarity between subjects", xlab = "Number of removed connections", main = main)
   
   for (i in 1:NREPS) lines(removed, var.ordered.sampled[i,], type="b", col="blue", pch=20, cex = 0.5)
@@ -999,12 +1006,12 @@ model.cognitive.association = function(association.score, slope_muc, log_slope_s
 #   print(myplot)
   #model.diff = lm(association.score ~ slope_muc.scaled + intercept_muc.scaled + log_intercept_sigmac.scaled )
   #print(summary(model.diff))
-  par(mar=c(8,8,5,5), mgp=c(4,1,0))
+  par(mar=c(8,8,5,5), mgp=c(5,2,0))
   plot_correl(association.score[!is.na(association.score)], 
               slope_muc[!is.na(association.score)],
               "z-score", 
               expression(bar(beta)[mu]), 
-              cex = 1,
+              #cex = 1,
               right = T)
   }            
   #plot_correl(model.diff$residuals, 
@@ -1736,7 +1743,7 @@ plot_intra_values.slopes = function(average.ICN, MODULES_FILE, scatter=TRUE, plo
 
   if (scatter){
     
-    par(mfrow=c(1, 1), mar=c(8,8,5,5), mgp=c(4,1,0))
+    par(mfrow=c(1, 1), mar=c(8,8,5,5), mgp=c(5,2,0))
     plot(0, xlab = expression(bar(beta)[mu]), ylab = expression(bar(beta)[sigma]), xlim = xlimits, ylim = ylimits, 
          cex.lab= CEX_LAB, cex.axis = CEX_AXIS, type="n")
 
@@ -1779,7 +1786,7 @@ plot_intra_values.intercept = function(average.ICN, MODULES_FILE, scatter=TRUE){
   
   if (scatter){
     
-    par(mfrow=c(1, 1), mar=c(8,8,5,5), mgp=c(4,1,0))
+    par(mfrow=c(1, 1), mar=c(8,8,5,5), mgp=c(5,2,0))
     plot(0, xlab = expression("Average " ~ beta[mu]), ylab = expression("Average " ~ alpha[mu]), xlim = c(-0.0025, 0.002), ylim = c(0.2, 0.5), 
          cex.lab= CEX_LAB, cex.axis = CEX_AXIS, type="n")
     segments(slope_muc.quantsl, intercept_muc.means, slope_muc.quantsh, intercept_muc.means, lwd=2) 

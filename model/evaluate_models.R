@@ -1,5 +1,5 @@
 #rm(list=ls())
-source("./aux_funcs.R")
+source("./stats/aux_funcs.R")
 
 params = c("intercept_muc_mu", "intercept_muc_sigma", 
            "slope_muc_mu", "slope_muc_sigma", 
@@ -44,9 +44,13 @@ dochecks = function(WD, TASK, USEMCMC, MODEL_DIR, MODULES_FILE=NULL, IS_FC = FAL
   
 }
 
+MODEL_DIR="modellingMCMC"
+USEMCMC = T
+
+res = dochecks(WD, 'PET', USEMCMC, MODEL_DIR); means.PET = res$means; zeros.PET = res$zeros
+res = dochecks(WD, 'VBM', USEMCMC, MODEL_DIR); means.VBM = res$means; zeros.VBM = res$zeros
 
 MODEL_DIR="modelling_modules_20"
-USEMCMC = T
 res = dochecks(WD, 'GNG', USEMCMC, MODEL_DIR, MODULES_FILE = MODULES_FILE_20, IS_FC = T, bymodules=T); means.mod.20.GNG = res$means; zeros.mod.20.GNG = res$zeros 
 average.cog.GNG.20 = res$average.cog; average.ICN.GNG.20 = res$average.ICN
 
@@ -66,10 +70,6 @@ average.cog.TAB.70 = res$average.cog; average.ICN.TAB.70 = res$average.ICN
 res = dochecks(WD, 'RS', USEMCMC, MODEL_DIR, MODULES_FILE = MODULES_FILE_70, IS_FC = T, bymodules=T);  means.mod.70.RS = res$means;  zeros.mod.70.RS = res$zeros
 average.cog.RS.70 = res$average.cog; average.ICN.RS.70 = res$average.ICN
 
-
-MODEL_DIR="modellingMCMC"
-res = dochecks(WD, 'PET', USEMCMC, MODEL_DIR); means.PET = res$means; zeros.PET = res$zeros
-res = dochecks(WD, 'VBM', USEMCMC, MODEL_DIR); means.VBM = res$means; zeros.VBM = res$zeros
 
 USEMCMC = F
 MODEL_DIR="modelling_noncentered"

@@ -1,6 +1,6 @@
 Mu	Sigma
-intercept_muc_mu 	0	5
-intercept_muc_sigma	0	1
+intercept_muc_mu 	0	2
+intercept_muc_sigma	0	2
 slope_muc_mu	0	0.01
 slope_muc_sigma	0	0.1
 log_intercept_sigmac_mu	-3	 2
