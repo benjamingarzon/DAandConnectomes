@@ -778,7 +778,7 @@ plot_connection_removal = function(FC.ordered, values, conn.order, group1, group
     #image(apply(d.ordered.sampled, c(1, 2), mean), main=paste("Shuffled", p), zlim = conlims, asp = 1)
   }
   
-  plot(removed, var.ordered, type="b", col="red", lwd=3, pch=20, cex.axis=CEX_AXIS+1, cex.lab=CEX_LAB+2, cex.main = CEX_MAIN+2, ylim=c(0.3, 0.5),
+  plot(removed, var.ordered, type="b", col="red", lwd=3, pch=20, cex.axis=CEX_AXIS, cex.lab=CEX_LAB, cex.main = CEX_MAIN+2, ylim=c(0.3, 0.5),
        ylab="Average similarity between subjects", xlab = "Number of removed connections", main = main)
   
   for (i in 1:NREPS) lines(removed, var.ordered.sampled[i,], type="b", col="blue", pch=20, cex = 0.5)
@@ -812,19 +812,19 @@ plot_connectome_removal = function(input_file, demo, conn.order.mu, conn.order.s
 #  par(mfrow=c(2, 2), mar=c(8,8,5,5), mgp=c(4,1,0))
   
   save_fig(figname=paste0(figname,"a"), res=BWRES)
-  par(mar=c(8,8,5,5), mgp=c(4,1,0))
+  par(mar=c(8,8,5,5), mgp=c(5,2,0))
   plot_connection_removal(FC.ordered, values_mu, conn.order.mu, 'Young', 'Old', expression("Ordering by |" * beta[mu] * "|, Younger-Older"), group.ordered, expression("|"*beta[mu]*"|"), lim=lim.muc)
 
   save_fig(figname=paste0(figname,"b"), res=BWRES)
-  par(mar=c(8,8,5,5), mgp=c(4,1,0))
+  par(mar=c(8,8,5,5), mgp=c(5,2,0))
   plot_connection_removal(FC.ordered, values_mu, conn.order.mu, 'Old', 'Old', expression("Ordering by |" * beta[mu] * "|, Older-Older"), group.ordered, expression("|"*beta[mu]*"|"), lim=lim.muc)
 
   save_fig(figname=paste0(figname,"c"), res=BWRES)
-  par(mar=c(8,8,5,5), mgp=c(4,1,0))
+  par(mar=c(8,8,5,5), mgp=c(5,2,0))
   plot_connection_removal(FC.ordered, values_sigma, conn.order.sigma, 'Young', 'Old', expression("Ordering by " * beta[sigma] * ", Young-Older"), group.ordered, expression(""*beta[sigma]*""), lim = lim.sigmac)
 
   save_fig(figname=paste0(figname,"d"), res=BWRES)
-  par(mar=c(8,8,5,5), mgp=c(4,1,0))
+  par(mar=c(8,8,5,5), mgp=c(5,2,0))
   plot_connection_removal(FC.ordered, values_sigma, conn.order.sigma, 'Old', 'Old', expression("Ordering by " * beta[sigma] * ", Older-Older"), group.ordered, expression(""*beta[sigma]*""), lim= lim.sigmac)
   
 }

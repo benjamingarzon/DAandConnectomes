@@ -592,12 +592,12 @@ coefs.70.GNG = model.cognitive.association(association.score.mod.70.GNG, means.m
 
 # DO PLOTS WITH AVERAGE VALUES
 
-save_fig(figname="Figure4a", res=BWRES)
+save_fig(figname="Figure4a", res=BWRES, height = 6.5)
 par(mar=c(8,8,5,5), mgp = c(5, 2, 0))
 
 plot(n_back ~ updating, data=demo, xlab = "Letter updating score", ylab = "3-back score", pch=c(1, 2)[class], 
      cex.axis=CEX_AXIS + .5, cex.lab=CEX_LAB + 1, cex=6, lwd = 11, bg="grey70")
-points(n_back ~ updating, data=subset(demo, Subject %in% outliers), pch=4, cex=7, lwd = 10)
+points(n_back ~ updating, data=subset(demo, Subject %in% outliers), pch=4, cex=6, lwd = 10)
 arrows(x0=pca$center["updating"], 
        y0=pca$center["n_back"],  
        x1=pca$center["updating"] + loadings(pca)["updating","Comp.1"]*pca$scale[1], 
