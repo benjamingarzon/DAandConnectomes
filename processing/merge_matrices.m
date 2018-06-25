@@ -1,14 +1,23 @@
-%  function merge_matrices_shen
-%  clear all
+function merge_matrices
+  clear all
 % 
-% subject_list='D02 D03 D04 D05 D07 D08 D11 D13 D14 D15 D16 D17 D18 D19 D20 D21 D22 D23 D24 D25 D26 D29 D30 D31 D33 D34 D35 D36 D37 D38 D39 D40 D42 D43 D46 D47 D48 D49 D50 D52 D55 D56 D58 D60 D61 D62 D63 D64 D65 D66 D67 D70 D72 D80 D82 D83 D84 D85 D86 D90';
-% matrix_file = 'zFC_150.csv';
-% merged_matrices_file = 'zFC_all_150.mat';
-% cd('~/Data/DAD/RS/ConnectomeShen')
-% codes_file = '~/Data/DAD/RS/parcellations/shen/Group_seg150_BAindexing_setA.txt';
-% 
-% test(subject_list, matrix_file, codes_file, merged_matrices_file);
-% end
+subject_list='sub-D02 sub-D03 sub-D04 sub-D05 sub-D07 sub-D08 sub-D11 sub-D13 sub-D14 sub-D15 sub-D16 sub-D17 sub-D18 sub-D19 sub-D20 sub-D21 sub-D22 sub-D23 sub-D24 sub-D25 sub-D26 sub-D29 sub-D30 sub-D31 sub-D33 sub-D34 sub-D35 sub-D36 sub-D37 sub-D38 sub-D39 sub-D40 sub-D42 sub-D43 sub-D46 sub-D47 sub-D48 sub-D49 sub-D50 sub-D52 sub-D55 sub-D56 sub-D58 sub-D60 sub-D61 sub-D62 sub-D63 sub-D64 sub-D65 sub-D66 sub-D67 sub-D70 sub-D72 sub-D80 sub-D82 sub-D83 sub-D84 sub-D85 sub-D86 sub-D90';
+matrix_file = 'zFC_150.csv';
+merged_matrices_file = 'zFC_all_150.mat';
+codes_file = '~/Data/DAD/parcellations/shen/Group_seg150_BAindexing_setA.txt';
+
+cd('~/Data/DAD/processed/fmriprep/connectomes/GNG')
+merge_matrices_shen(subject_list, matrix_file, codes_file, merged_matrices_file);
+
+cd('~/Data/DAD/processed/fmriprep/connectomes/RS')
+merge_matrices_shen(subject_list, matrix_file, codes_file, merged_matrices_file);
+
+cd('~/Data/DAD/processed/fmriprep/connectomes/TAB')
+merge_matrices_shen(subject_list, matrix_file, codes_file, merged_matrices_file);
+
+
+
+end
 
 function merge_matrices_shen(subject_list, matrix_file, codes_file, merged_matrices_file)
 %function test(subject_list, matrix_file, codes_file, merged_matrices_file)
