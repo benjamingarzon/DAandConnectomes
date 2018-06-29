@@ -18,7 +18,7 @@ Rscript fit_models_connectome.R $INPUT_FILE $SAMPLES_DIR/vbsamples $STAN_FILE $P
 for FILE in $SAMPLES_DIR/vbsamples_?.csv; do
 myname=`basename $FILE .csv | sed 's/_//'`
 echo $myname
-./reduce_samples.py $FILE $SAMPLES_DIR/${myname}_reduced muc sigmac raw -mcmc > $SAMPLES_DIR/log
+./reduce_samples.py $FILE $SAMPLES_DIR/${myname}_reduced muc sigmac raw -mcmc #> $SAMPLES_DIR/log
 ./simplify_samples.py $FILE $SAMPLES_DIR/${myname}_simplified muc sigmac raw 
 rm $FILE 
 done

@@ -77,8 +77,8 @@ stan_data = list(S = length(age.shifted),
                  age = as.numeric(age.shifted),
                  priors = priors)
 
-WARMUP=35000 
-ITERS=WARMUP + 500
+WARMUP=50000 
+ITERS=WARMUP + 1000
 
 OUTPUT_SAMPLES=1000
 VBITERS=200000
@@ -92,6 +92,10 @@ if (USEMCMC==1) {
   fit <- stan(file = stan_file, data = stan_data, iter = ITERS, chains = 4, pars = c("muc", "sigmac"), 
   include = FALSE, warmup = WARMUP, sample_file=samples_file, control = stan_control, thin = 2)
   #save(fit.FC, file="fit.FC.Rdata")
+  Rhat  = summary(fit)$summary[, "Rhat"] 
+  n_eff = summary(fit)$summary[, "n_eff"] 
+  print(max(Rhat))
+  print(min(n_eff))
 } else {
 # USE ADVI
   # run several times!

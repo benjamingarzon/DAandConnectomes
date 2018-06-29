@@ -3,10 +3,9 @@
 rm(list=ls())
 
 # RUN SETUP SCRIPTS --------------------------------------- 
-
 setwd('~/Software/DAD/DAandConnectomes')
 source("./stats/aux_funcs.R")
-source("./stats/compute_modules.R")
+#source("./stats/compute_modules.R")
 setwd('~/Software/DAD/DAandConnectomes')
 
 # if not run
@@ -14,10 +13,16 @@ setwd('~/Software/DAD/DAandConnectomes')
 #source("../model/evaluate_models.R")
 
 # PATH DEFINITIONS --------------------------------------- 
+WORKDIR="~/Data/DAD/processed"
 
-INPUT_FILE.TAB='~/Data/DAD/processed/TAB/Connectome0.3/zFC_all_150_0.3_TAB_valid.mat'
-INPUT_FILE.GNG='~/Data/DAD/processed/GNG/Connectome0.3/zFC_all_150_0.3_GNG_valid.mat'
-INPUT_FILE.RS='~/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS_valid.mat'
+#INPUT_FILE.TAB='~/Data/DAD/processed/TAB/Connectome0.3/zFC_all_150_0.3_TAB_valid.mat'
+#INPUT_FILE.GNG='~/Data/DAD/processed/GNG/Connectome0.3/zFC_all_150_0.3_GNG_valid.mat'
+#INPUT_FILE.RS='~/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS_valid.mat'
+
+INPUT_FILE.TAB=file.path(WORKDIR, 'connectomes/TAB/zFC_all_150_valid.mat')
+INPUT_FILE.GNG=file.path(WORKDIR, 'connectomes/GNG/zFC_all_150_valid.mat')
+INPUT_FILE.RS=file.path(WORKDIR, 'connectomes/RS/zFC_all_150_valid.mat')
+
 
 MOTION_DIR.TAB='~/Data/DAD/processed/TAB/RealignParameter/'
 MOTION_DIR.GNG='~/Data/DAD/processed/GNG/RealignParameter/'

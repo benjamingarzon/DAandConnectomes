@@ -1,7 +1,9 @@
 
 # Average the parameters over anatomical and BrainMap modules
+WORKDIR="~/Data/DAD/processed/fmriprep"
+PARCDIR="~/Data/DAD/parcellations"
 
-FIGS_DIR = "~/Data/DAD/processed/analysis_variability/modules/"
+FIGS_DIR = file.path(WORKDIR, "connectomes/modules/")
 unlink(paste0(FIGS_DIR, '*'))
 fig_count = 0
 HCTHRESH = 0.42 # hierachical clustering threshold
@@ -10,31 +12,31 @@ ONLY_BEHAV = TRUE # use ońly behavioural domains
 # ------------------------------------------------------------------------
 # paths
 
-MODULES_FILE="modules.R"
-MODULES_FILE_MNI="~/Data/DAD/parcellations/shen/modules_MNI.R"
-MODULES_FILE_MNI_RED="~/Data/DAD/parcellations/shen/modules_MNI_reduced.R"
+MODULES_FILE="modules.RData"
+MODULES_FILE_MNI=file.path(PARCDIR, "shen/modules_MNI.RData")
+MODULES_FILE_MNI_RED=file.path(PARCDIR, "shen/modules_MNI_reduced.RData")
 
-MODULES_FILE_20="~/Data/DAD/ICNs/Laird/modules.R"
-MODULES_FILE_70="~/Data/DAD/ICNs/Ray/modules.R"
+MODULES_FILE_20="~/Data/DAD/ICNs/Laird/modules.RData"
+MODULES_FILE_70="~/Data/DAD/ICNs/Ray/modules.RData"
 
-INPUT_FILE.TAB='~/Data/DAD/processed/TAB/Connectome0.3/zFC_all_150_0.3_TAB.mat'
-INPUT_FILE.GNG='~/Data/DAD/processed/GNG/Connectome0.3/zFC_all_150_0.3_GNG.mat'
-INPUT_FILE.RS='~/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS.mat'
+INPUT_FILE.TAB=file.path(WORKDIR, 'connectomes/TAB/zFC_all_150.mat')
+INPUT_FILE.GNG=file.path(WORKDIR, 'connectomes/GNG/zFC_all_150.mat')
+INPUT_FILE.RS=file.path(WORKDIR, 'connectomes/RS/zFC_all_150.mat')
 
-INPUT_FILE.TAB.valid='~/Data/DAD/processed/TAB/Connectome0.3/zFC_all_150_0.3_TAB_valid.mat'
-INPUT_FILE.GNG.valid='~/Data/DAD/processed/GNG/Connectome0.3/zFC_all_150_0.3_GNG_valid.mat'
-INPUT_FILE.RS.valid='~/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS_valid.mat'
+INPUT_FILE.TAB.valid=file.path(WORKDIR, 'connectomes/TAB/zFC_all_150_valid.mat')
+INPUT_FILE.GNG.valid=file.path(WORKDIR, 'connectomes/GNG/zFC_all_150_valid.mat')
+INPUT_FILE.RS.valid=file.path(WORKDIR, 'connectomes/RS/zFC_all_150_valid.mat')
 
-INPUT_FILE.TAB.mod.20='~/Data/DAD/processed/TAB/modules/zFC_all_150_0.3_TAB_20.mat'
-INPUT_FILE.GNG.mod.20='~/Data/DAD/processed/GNG/modules/zFC_all_150_0.3_GNG_20.mat'
-INPUT_FILE.RS.mod.20='~/Data/DAD/processed/RS/modules/zFC_all_150_0.4_RS_20.mat'
+INPUT_FILE.TAB.mod.20=file.path(WORKDIR, 'connectomes/TAB/modules/zFC_all_150_TAB_20.mat')
+INPUT_FILE.GNG.mod.20=file.path(WORKDIR, 'connectomes/GNG/modules/zFC_all_150_GNG_20.mat')
+INPUT_FILE.RS.mod.20=file.path(WORKDIR, 'connectomes/RS/modules/zFC_all_150_RS_20.mat')
 
-INPUT_FILE.TAB.mod.70='~/Data/DAD/processed/TAB/modules/zFC_all_150_0.3_TAB_70.mat'
-INPUT_FILE.GNG.mod.70='~/Data/DAD/processed/GNG/modules/zFC_all_150_0.3_GNG_70.mat'
-INPUT_FILE.RS.mod.70='~/Data/DAD/processed/RS/modules/zFC_all_150_0.4_RS_70.mat'
+INPUT_FILE.TAB.mod.70=file.path(WORKDIR, 'connectomes/TAB/modules/zFC_all_150_TAB_70.mat')
+INPUT_FILE.GNG.mod.70=file.path(WORKDIR, 'connectomes/GNG/modules/zFC_all_150_GNG_70.mat')
+INPUT_FILE.RS.mod.70=file.path(WORKDIR, 'connectomes/RS/modules/zFC_all_150_RS_70.mat')
 
-ROI_VOL_FILE="~/Data/DAD/parcellations/shen/parc_shen_150.volume.csv"
-LABELS_FILE="~/Data/DAD/parcellations/shen/fconn_150_labels.txt"
+ROI_VOL_FILE=file.path(PARCDIR, "shen/parc_shen_150.volume.csv")
+LABELS_FILE=file.path(PARCDIR, "shen/fconn_150_labels.txt")
 labels = read.csv(LABELS_FILE, header=TRUE, sep='\t')
 
 # sync valid indices
@@ -48,6 +50,7 @@ merged_matrices = abind(
   info.RS$merged.matrices, 
   along=3)
 
+# select those that are valid for all tasks
 valid = !apply(merged_matrices, c(1,2), function(x) any(is.na(x)))
 valid = apply(valid, 2, any)
 valid.indices = which(valid)
@@ -55,11 +58,20 @@ n.rois = length(valid)
 
 # write out 
 writeMat(INPUT_FILE.TAB.valid,
-         subjects=unlist(info.TAB$subjects), merged.matrices = info.TAB$merged.matrices, merged.matrices.mat=flatten(info.TAB$merged.matrices, valid.indices), labels=unlist(info.TAB$labels))
+         subjects=unlist(info.TAB$subjects), 
+         merged.matrices = info.TAB$merged.matrices, 
+         merged.matrices.mat=flatten(info.TAB$merged.matrices, valid.indices), 
+         labels=unlist(info.TAB$labels))
 writeMat(INPUT_FILE.GNG.valid,
-         subjects=unlist(info.GNG$subjects), merged.matrices = info.GNG$merged.matrices, merged.matrices.mat=flatten(info.GNG$merged.matrices, valid.indices), labels=unlist(info.GNG$labels))
+         subjects=unlist(info.GNG$subjects), 
+         merged.matrices = info.GNG$merged.matrices, 
+         merged.matrices.mat=flatten(info.GNG$merged.matrices, valid.indices), 
+         labels=unlist(info.GNG$labels))
 writeMat(INPUT_FILE.RS.valid, 
-         subjects=unlist(info.RS$subjects), merged.matrices = info.RS$merged.matrices, merged.matrices.mat=flatten(info.RS$merged.matrices, valid.indices), labels=unlist(info.RS$labels))
+         subjects=unlist(info.RS$subjects), 
+         merged.matrices = info.RS$merged.matrices, 
+         merged.matrices.mat=flatten(info.RS$merged.matrices, valid.indices), 
+         labels=unlist(info.RS$labels))
 
 # ------------------------------------------------------------------------
 # get MNI modules
@@ -115,7 +127,7 @@ artifacts = c(66, 69, 70)
 ICNnames = formatC(seq(70), width=2, flag="0")
 compute_modules(WD, artifacts, ICNnames, figname="FigureSupp2d")
 
-if( F ) {
+if( T ) {
 # average FC in modules
 average_over_modules(INPUT_FILE.TAB.valid, MODULES_FILE_20, INPUT_FILE.TAB.mod.20)
 average_over_modules(INPUT_FILE.GNG.valid, MODULES_FILE_20, INPUT_FILE.GNG.mod.20)

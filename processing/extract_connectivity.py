@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 import argparse
 from sklearn.covariance import ledoit_wolf
 from nilearn.input_data import NiftiLabelsMasker, NiftiMasker
@@ -30,20 +31,24 @@ def get_fc(func_mni_filename, atlas_filename, confounds_filename, output_filenam
     if FWHM == 0:
         FWHM = None
 
-    confounds = pd.read_csv(confounds_filename)
+    confounds = pd.read_csv(confounds_filename, sep='\t')
     global_signal = confounds['GlobalSignal'].values
-    masker = NiftiLabelsMasker(labels_img = atlas_filename, 
-                     smoothing_fwhm = FWHM,
-                     t_r = TR, 
-                     memory_level = 1, 
-                     memory = 'nilearn_cache')
+    FD = confounds['FramewiseDisplacement'].values
+#    masker = NiftiLabelsMasker(labels_img = atlas_filename, 
+#                     smoothing_fwhm = FWHM,
+#                     t_r = TR, 
+#                     memory_level = 1, 
+#                     memory = 'nilearn_cache')
 
-    X = masker.fit_transform(func_mni_filename, confounds = global_signal)
-    nvols = X.shape[0]
-    fc = compute_fc(X, TYPE)
-    fc = np.arctanh(fc)
+#    X = masker.fit_transform(func_mni_filename, confounds = global_signal)
+#    nvols = X.shape[0]
+#    fc = compute_fc(X, TYPE)
+#    fc = np.arctanh(fc)
 
-    np.savetxt(output_filename, fc, delimiter=" ")
+#    np.savetxt(output_filename, fc, delimiter=" ")
+
+    # print average and max FD
+    print("{};{};{};{}".format(np.mean(FD[1:]), np.max(FD[1:]), np.sum(FD[1:] > 0.2)/FD.size, np.sum(FD[1:] > 0.3)/FD.size ))
 
 def main():
 
