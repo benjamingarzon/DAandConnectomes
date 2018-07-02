@@ -9,8 +9,8 @@ source("./stats/aux_funcs.R")
 setwd('~/Software/DAD/DAandConnectomes')
 
 # if not run
-#system("../model/run_all_models.sh", wait=FALSE)
-#source("../model/evaluate_models.R")
+#system("model/run_all_models.sh", wait=FALSE)
+source("model/evaluate_models.R")
 
 # PATH DEFINITIONS --------------------------------------- 
 WORKDIR="~/Data/DAD/processed"

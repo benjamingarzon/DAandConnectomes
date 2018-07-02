@@ -19,7 +19,7 @@ for FILE in $SAMPLES_DIR/vbsamples_?.csv; do
 myname=`basename $FILE .csv | sed 's/_//'`
 echo $myname
 ./reduce_samples.py $FILE $SAMPLES_DIR/${myname}_reduced muc sigmac raw -mcmc #> $SAMPLES_DIR/log
-./simplify_samples.py $FILE $SAMPLES_DIR/${myname}_simplified muc sigmac raw 
+./simplify_samples.py $FILE $SAMPLES_DIR/${myname}_simplified muc sigmac raw
 rm $FILE 
 done
 
@@ -29,7 +29,9 @@ Rscript fit_models_connectome.R $INPUT_FILE $SAMPLES_DIR/vbsamples${1} $STAN_FIL
 ./reduce_samples.py $SAMPLES_DIR/vbsamples${1} $SAMPLES_DIR/vbsamples${1}_reduced muc sigmac raw
 
 CONVERGED=`cat $SAMPLES_DIR/log${1} | grep CONVERGED |wc -l`
-if [ $CONVERGED==1 ]; then rm $SAMPLES_DIR/log${1} $SAMPLES_DIR/vbsamples${1}; fi
+if [ $CONVERGED==1 ]; then 
+  rm $SAMPLES_DIR/log${1} $SAMPLES_DIR/vbsamples${1}*; 
+fi
 fi
 }
 
@@ -58,7 +60,7 @@ for i in `seq 2 $TOTAL_CHAINS`; do
  fi
 
 done
-rm $SAMPLES_DIR/vbsamples*_reduced
+#rm $SAMPLES_DIR/vbsamples*_reduced
 
 
 else

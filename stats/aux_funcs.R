@@ -386,7 +386,7 @@ check_chains = function(FIGS_DIR, PARAMS_FILE_LIST, title){
   
   print("min n_eff")
   min_neff = min(n_eff, na.rm=TRUE)
-  print(n_eff[n_eff = min_neff])
+  print(n_eff[n_eff == min_neff])
 
   print("Rhat above 1.1 : ")
   print(Rhat[Rhat > 1.1])

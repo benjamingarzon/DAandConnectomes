@@ -39,6 +39,7 @@ ROI_VOL_FILE=file.path(PARCDIR, "shen/parc_shen_150.volume.csv")
 LABELS_FILE=file.path(PARCDIR, "shen/fconn_150_labels.txt")
 labels = read.csv(LABELS_FILE, header=TRUE, sep='\t')
 
+# ------------------------------------------------------------------------
 # sync valid indices
 info.TAB = readMat(INPUT_FILE.TAB)
 info.GNG = readMat(INPUT_FILE.GNG)
@@ -49,6 +50,8 @@ merged_matrices = abind(
   info.GNG$merged.matrices, 
   info.RS$merged.matrices, 
   along=3)
+
+# ------------------------------------------------------------------------
 
 # select those that are valid for all tasks
 valid = !apply(merged_matrices, c(1,2), function(x) any(is.na(x)))

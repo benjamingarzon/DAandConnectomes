@@ -45,16 +45,17 @@ STAN_FILE="age_model_H.stan"
 
 INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/RS/zFC_all_150_valid.mat"
 SAMPLES_DIR="$HOME/Data/DAD/processed/RS/$DIR/"
-#./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
+./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
 
 INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/TAB/zFC_all_150_valid.mat"
 SAMPLES_DIR="$HOME/Data/DAD/processed/TAB/$DIR"
-#./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
+./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
 
 INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/GNG/zFC_all_150_valid.mat"
 SAMPLES_DIR="$HOME/Data/DAD/processed/GNG/$DIR/"
-#./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
+./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
 
+exit 1
 USEMCMC=1
 STAN_FILE="age_model_H.stan"
 

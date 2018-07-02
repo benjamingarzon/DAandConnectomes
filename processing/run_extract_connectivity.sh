@@ -30,6 +30,7 @@ for TASK in GNG TAB RS; do
     mkdir $OUTDIR/${TASK}/$SUBJECT
 
     INPUT=$WD/${SUBJECT}/func/${SUBJECT}_task-${TASK}rest_run-${RUN}_bold_space-MNI152NLin2009cAsym_variant-smoothAROMAnonaggr_preproc.nii.gz
+    MASK=$WD/${SUBJECT}/func/${SUBJECT}_task-${TASK}rest_run-${RUN}_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz
     OUTPUT=$OUTDIR/${TASK}/$SUBJECT/zFC_150-${RUN}.csv
     CONFOUNDS=$WD/${SUBJECT}/func/${SUBJECT}_task-${TASK}rest_run-${RUN}_bold_confounds.tsv
     GLOBAL=$WD/${SUBJECT}/func/${SUBJECT}_task-${TASK}rest_run-${RUN}_GlobalSignal.tsv
@@ -40,8 +41,8 @@ for TASK in GNG TAB RS; do
       # extract only relevant columns
       awk '{print $3}' $CONFOUNDS > $GLOBAL
       awk '{print $7}' $CONFOUNDS > $FRAMEWISE
- #    awk '{print $3}' $CONFOUNDS | tail -n +2 > $GLOBAL
-      FD=`./extract_connectivity.py $INPUT $ATLAS $CONFOUNDS $OUTPUT 2.0 full 0`
+      FD=`./extract_connectivity.py $INPUT $ATLAS $MASK $CONFOUNDS $OUTPUT 2.0 full 0`
+#      ./extract_connectivity.py $INPUT $ATLAS $MASK $CONFOUNDS $OUTPUT 2.0 full 0
       echo "${SUBJECT};${TASK};${RUN};$FD" >> $OUTDIR/FramewiseDisplacement.csv
 
       # select based on criteria
@@ -57,7 +58,6 @@ for TASK in GNG TAB RS; do
     fi
 
     fi
-
     done
     rm $OUTDIR/${TASK}/$SUBJECT/zFC_150.csv
     echo "*******************************************************************************"

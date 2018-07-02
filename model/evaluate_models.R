@@ -10,8 +10,8 @@ params = c("intercept_muc_mu", "intercept_muc_sigma",
 #           "log_intercept_sigmac_mu", "log_intercept_sigmac_sigma",
 #           "lp__")
 
-MODULES_FILE_20="~/Data/DAD/ICNs/Laird/modules.R"
-MODULES_FILE_70="~/Data/DAD/ICNs/Ray/modules.R"
+MODULES_FILE_20="~/Data/DAD/ICNs/Laird/modules.RData"
+MODULES_FILE_70="~/Data/DAD/ICNs/Ray/modules.RData"
 
 
 WD="~/Data/DAD/processed/"
@@ -104,7 +104,7 @@ save(means.PET, means.VBM, means.TAB, means.GNG, means.RS,
      FC.RS.sigma.70, FC.TAB.sigma.70, FC.GNG.sigma.70,
      #     slope_muc.samples.RS, slope_muc.samples.TAB, slope_muc.samples.GNG,
      #     intercept_muc.samples.RS, intercept_muc.samples.TAB, intercept_muc.samples.GNG,
-     file = "~/Data/DAD/processed/analysis_variability/data.Rdata")
+     file = "~/Data/DAD/processed/analysis_variability/data_GSR.Rdata")
 
 dev.off()
 
