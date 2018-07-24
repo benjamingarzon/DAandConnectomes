@@ -21,10 +21,10 @@ dochecks = function(WD, TASK, USEMCMC, MODEL_DIR, MODULES_FILE=NULL, IS_FC = FAL
   FIGS_DIR <<- file.path(WD, TASK, MODEL_DIR, "figs/")
   
   if (!USEMCMC) {
-    SAMPLES_FILE="vbsamples1_reduced"
+    SAMPLES_FILE="vbsamples"
     
   } else { 
-    PARAMS_FILE_LIST=file.path(WD, TASK, MODEL_DIR, paste0("vbsamples", seq(4), "_simplified"))
+    PARAMS_FILE_LIST=file.path(WD, TASK, MODEL_DIR, paste0("vbsamples", seq(4), "_simplified") )
     check_chains(FIGS_DIR, PARAMS_FILE_LIST, TASK)
     SAMPLES_FILE="vbsamples"
   }

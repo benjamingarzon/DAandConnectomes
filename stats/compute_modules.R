@@ -39,6 +39,8 @@ ROI_VOL_FILE=file.path(PARCDIR, "shen/parc_shen_150.volume.csv")
 LABELS_FILE=file.path(PARCDIR, "shen/fconn_150_labels.txt")
 labels = read.csv(LABELS_FILE, header=TRUE, sep='\t')
 
+if( T ) {
+  
 # ------------------------------------------------------------------------
 # sync valid indices
 info.TAB = readMat(INPUT_FILE.TAB)
@@ -55,6 +57,7 @@ merged_matrices = abind(
 
 # select those that are valid for all tasks
 valid = !apply(merged_matrices, c(1,2), function(x) any(is.na(x)))
+diag(valid) = F
 valid = apply(valid, 2, any)
 valid.indices = which(valid)
 n.rois = length(valid)
@@ -75,6 +78,10 @@ writeMat(INPUT_FILE.RS.valid,
          merged.matrices = info.RS$merged.matrices, 
          merged.matrices.mat=flatten(info.RS$merged.matrices, valid.indices), 
          labels=unlist(info.RS$labels))
+
+#info.TAB.valid = readMat(INPUT_FILE.TAB.valid)
+#info.GNG.valid = readMat(INPUT_FILE.GNG.valid)
+#info.RS.valid = readMat(INPUT_FILE.RS.valid)
 
 # ------------------------------------------------------------------------
 # get MNI modules
@@ -130,7 +137,6 @@ artifacts = c(66, 69, 70)
 ICNnames = formatC(seq(70), width=2, flag="0")
 compute_modules(WD, artifacts, ICNnames, figname="FigureSupp2d")
 
-if( T ) {
 # average FC in modules
 average_over_modules(INPUT_FILE.TAB.valid, MODULES_FILE_20, INPUT_FILE.TAB.mod.20)
 average_over_modules(INPUT_FILE.GNG.valid, MODULES_FILE_20, INPUT_FILE.GNG.mod.20)

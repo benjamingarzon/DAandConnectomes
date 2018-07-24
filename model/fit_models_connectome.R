@@ -91,10 +91,10 @@ if (USEMCMC==1) {
   
   fit <- stan(file = stan_file, data = stan_data, iter = ITERS, chains = 4, pars = c("muc", "sigmac"), 
   include = FALSE, warmup = WARMUP, sample_file=samples_file, control = stan_control, thin = 2)
-  #save(fit.FC, file="fit.FC.Rdata")
+  #  save(fit, file="fit.FC.Rdata")
 } else {
 # USE ADVI
   # run several times!
   fit <- vb(stan_model(stan_file), data = stan_data, output_samples=OUTPUT_SAMPLES, sample_file=samples_file, iter=VBITERS)
-  #save(fit.FC, file="fit.vb.FC.Rdata")
+  #save(fit, file="fit.vb.FC.Rdata")
 }

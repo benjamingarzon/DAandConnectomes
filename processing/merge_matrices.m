@@ -18,8 +18,6 @@ subject_list = '~/Data/DAD/processed/fmriprep/connectomes/Subjects_TAB.txt'
 cd('~/Data/DAD/processed/fmriprep/connectomes/TAB')
 merge_matrices_shen(subject_list, matrix_file, codes_file, merged_matrices_file);
 
-
-
 end
 
 function merge_matrices_shen(subject_list, matrix_file, codes_file, merged_matrices_file)
@@ -27,14 +25,13 @@ function merge_matrices_shen(subject_list, matrix_file, codes_file, merged_matri
 
 subjects = importdata(subject_list);
 
-info = readtable(codes_file, 'Delimiter', ',')
+info = readtable(codes_file, 'Delimiter', ',');
 labels = info.name;
 regions = info.subunnit;
 
 merged_matrices = [];
 merged_matrices_mat = [];
 for i=1:numel(subjects)
-display(subjects{i});
 
 M = load(fullfile('.',subjects{i}, matrix_file));
 M(isinf(M)) = 0;
@@ -42,12 +39,14 @@ if i==1
     merged_matrices = M;
 else
     merged_matrices = cat(3, merged_matrices, M);
+end
+nans = sum(isnan(M), 2) == size(M, 1) - 1;
+display([subjects{i}, ' ', num2str(sum(nans)) ] );
 
 end
-  
-end
 nans = any(isnan(merged_matrices), 3);
-valid = sum(nans) < numel(labels) ;
+valid = sum(nans) < (numel(labels) - 1) ;
+display(sum(valid))
 valid_labels = labels(valid);
 valid_regions = regions(valid);
 valid_indices = find(valid);
@@ -56,11 +55,13 @@ for i=1:numel(subjects)
     M = merged_matrices(:,:,i);
     M = M(valid, valid);
     M(isinf(M)) = 0;
-    
+    subjects{i} = subjects{i}(5:7);
     merged_matrices_mat = [merged_matrices_mat; squareform(M)];    
 end
-
+display(['Number of subjects: ' num2str(size(merged_matrices_mat, 1))])
 display(['Total valid indices: ' num2str(numel(valid_labels))])
+display(size(merged_matrices_mat))
+
 save(merged_matrices_file, 'merged_matrices', 'labels', 'subjects','valid_regions','valid_indices', 'valid_labels', 'merged_matrices_mat') 
 
 end

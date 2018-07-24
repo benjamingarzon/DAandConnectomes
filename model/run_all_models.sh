@@ -22,40 +22,23 @@ PRIORS_FILE="priors/VBM_priors.csv"
 #INITS=100
 USEMCMC=0
 FITFC=1
-DIR=modelling_centered
-PRIORS_FILE="priors/FC_priors.csv"
-STAN_FILE="age_model_H_centered.stan"
-
-# old files INPUT_FILE="$HOME/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS_valid.mat"
-INPUT_FILE="$HOME/Data/DAD/processed/connectomes/RS/zFC_all_150_valid.mat"
-SAMPLES_DIR="$HOME/Data/DAD/processed/RS/$DIR/"
-#./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
-
-INPUT_FILE="$HOME/Data/DAD/processed/connectomes/TAB/zFC_all_150_valid.mat"
-SAMPLES_DIR="$HOME/Data/DAD/processed/TAB/$DIR"
-#./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
-
-INPUT_FILE="$HOME/Data/DAD/processed/connectomes/GNG/zFC_all_150_valid.mat"
-SAMPLES_DIR="$HOME/Data/DAD/processed/GNG/$DIR/"
-#./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
 
 DIR=modelling_noncentered
 STAN_FILE="age_model_H.stan"
 
+INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/TAB/zFC_all_150_valid.mat"
+SAMPLES_DIR="$HOME/Data/DAD/processed/TAB/$DIR"
+./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS &
 
-INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/RS/zFC_all_150_valid.mat"
+#INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/GNG/zFC_all_150_valid.mat"
+SAMPLES_DIR="$HOME/Data/DAD/processed/GNG/$DIR/"
+#./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS &
+
+#INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/RS/zFC_all_150_valid.mat"
 SAMPLES_DIR="$HOME/Data/DAD/processed/RS/$DIR/"
 ./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
 
-INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/TAB/zFC_all_150_valid.mat"
-SAMPLES_DIR="$HOME/Data/DAD/processed/TAB/$DIR"
-./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
 
-INPUT_FILE="$HOME/Data/DAD/processed/fmriprep/connectomes/GNG/zFC_all_150_valid.mat"
-SAMPLES_DIR="$HOME/Data/DAD/processed/GNG/$DIR/"
-./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
-
-exit 1
 USEMCMC=1
 STAN_FILE="age_model_H.stan"
 
@@ -92,3 +75,19 @@ SAMPLES_DIR="$HOME/Data/DAD/processed/GNG/$DIR/"
 ./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
 
 
+# DIR=modelling_centered
+# PRIORS_FILE="priors/FC_priors.csv"
+# STAN_FILE="age_model_H_centered.stan"
+# 
+# # old files INPUT_FILE="$HOME/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS_valid.mat"
+# INPUT_FILE="$HOME/Data/DAD/processed/connectomes/RS/zFC_all_150_valid.mat"
+# SAMPLES_DIR="$HOME/Data/DAD/processed/RS/$DIR/"
+# #./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
+# 
+# INPUT_FILE="$HOME/Data/DAD/processed/connectomes/TAB/zFC_all_150_valid.mat"
+# SAMPLES_DIR="$HOME/Data/DAD/processed/TAB/$DIR"
+# #./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS
+# 
+# INPUT_FILE="$HOME/Data/DAD/processed/connectomes/GNG/zFC_all_150_valid.mat"
+# SAMPLES_DIR="$HOME/Data/DAD/processed/GNG/$DIR/"
+# #./run_models_parallel.sh $INPUT_FILE $SAMPLES_DIR $STAN_FILE $PRIORS_FILE $FITFC $USEMCMC $INITS

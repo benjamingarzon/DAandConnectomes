@@ -5,12 +5,12 @@ rm(list=ls())
 # RUN SETUP SCRIPTS --------------------------------------- 
 setwd('~/Software/DAD/DAandConnectomes')
 source("./stats/aux_funcs.R")
-#source("./stats/compute_modules.R")
+source("./stats/compute_modules.R")
 setwd('~/Software/DAD/DAandConnectomes')
 
 # if not run
 #system("model/run_all_models.sh", wait=FALSE)
-source("model/evaluate_models.R")
+#source("model/evaluate_models.R")
 
 # PATH DEFINITIONS --------------------------------------- 
 WORKDIR="~/Data/DAD/processed"
@@ -19,10 +19,9 @@ WORKDIR="~/Data/DAD/processed"
 #INPUT_FILE.GNG='~/Data/DAD/processed/GNG/Connectome0.3/zFC_all_150_0.3_GNG_valid.mat'
 #INPUT_FILE.RS='~/Data/DAD/processed/RS/Connectome0.4/zFC_all_150_0.4_RS_valid.mat'
 
-INPUT_FILE.TAB=file.path(WORKDIR, 'connectomes/TAB/zFC_all_150_valid.mat')
-INPUT_FILE.GNG=file.path(WORKDIR, 'connectomes/GNG/zFC_all_150_valid.mat')
-INPUT_FILE.RS=file.path(WORKDIR, 'connectomes/RS/zFC_all_150_valid.mat')
-
+INPUT_FILE.TAB=file.path(WORKDIR, 'fmriprep/connectomes/TAB/zFC_all_150_valid.mat')
+INPUT_FILE.GNG=file.path(WORKDIR, 'fmriprep/connectomes/GNG/zFC_all_150_valid.mat')
+INPUT_FILE.RS=file.path(WORKDIR, 'fmriprep/connectomes/RS/zFC_all_150_valid.mat')
 
 MOTION_DIR.TAB='~/Data/DAD/processed/TAB/RealignParameter/'
 MOTION_DIR.GNG='~/Data/DAD/processed/GNG/RealignParameter/'
@@ -92,7 +91,6 @@ plot_correl(means.RS$log_slope_sigmac, means.RS$log_intercept_sigmac, expression
 plot_correl(exp(50*means.GNG$log_slope_sigmac), exp(means.GNG$log_intercept_sigmac),   expression("exp(50*" ~ beta[sigma] ~ ") for FC (GNG)"),  expression( "exp(50*" ~ alpha[sigma] ~ ") for FC (GNG)"), cex = MYCEX)
 plot_correl(exp(50*means.TAB$log_slope_sigmac), exp(means.TAB$log_intercept_sigmac),  expression( "exp(50*" ~ beta[sigma] ~ ") for FC (TAB)"),  expression( "exp(50*" ~ alpha[sigma] ~ ") for FC (TAB)"), cex = MYCEX)
 plot_correl(exp(50*means.RS$log_slope_sigmac), exp(means.RS$log_intercept_sigmac),  expression( "exp(50*" ~ beta[sigma] ~ ") for FC (RS)"),  expression("exp(50*" ~ alpha[sigma] ~ ") for FC (RS)"), cex = MYCEX)
-
 
 save_fig(res=BWRES)
 par(mfrow=c(1, 3), mar=c(8,8,5,5), mgp=MYMGP)

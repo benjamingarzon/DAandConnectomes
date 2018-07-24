@@ -50,21 +50,9 @@ def get_fc(func_mni_filename, atlas_filename, mask_filename, confounds_filename,
     signal = masker.fit_transform(mymean)
     meansignal = np.mean(signal)
 
-    #print("Mean signal: {}".format(meansignal) )
-
-#    labels = masker.fit_transform(resample_to_img(atlas_filename, 
-#	func_mni_filename, interpolation = 'nearest'))
-#    uniquelabels = np.unique(labels)[1:]
-#    valid = np.zeros(len(uniquelabels))
-
-#    for i, label in enumerate(uniquelabels):
-#        print i, label
-#	valid[i] = np.sum(signal[labels == label] > meansignal*SIGNAL_THR)>
-#    print(valid)
-
     labelsmasker = NiftiLabelsMasker(labels_img = atlas_filename, 
-		     mask_img = mask_filename, 
- #                    smoothing_fwhm = FWHM, already smoothed
+#		     mask_img = mask_filename, 
+#                    smoothing_fwhm = FWHM, already smoothed
                      t_r = TR, 
                      memory_level = 1, 
                      memory = 'nilearn_cache')
@@ -73,13 +61,14 @@ def get_fc(func_mni_filename, atlas_filename, mask_filename, confounds_filename,
     valid_voxels = labelsmasker.fit_transform(masker.inverse_transform(1*(signal > meansignal*SIGNAL_FR)))
 
     nvols = X.shape[0]
-    X[:, np.where(valid_voxels < VOXELS_THR) ] = np.nan
+    invalid_regions = valid_voxels < VOXELS_THR 
+    X[:, np.where(invalid_regions) ] = np.nan
     fc = compute_fc(X, TYPE)
     fc = np.arctanh(fc)
     np.savetxt(output_filename, fc, delimiter=" ")
-
+    
     # print average and max FD
-    print("{};{};{};{}".format(np.mean(FD[1:]), np.max(FD[1:]), np.sum(FD[1:] > 0.2)/FD.size, np.sum(FD[1:] > 0.3)/FD.size ))
+    print("{};{};{};{};{}".format(np.mean(FD[1:]), np.max(FD[1:]), np.sum(FD[1:] > 0.2)/FD.size, np.sum(FD[1:] > 0.3)/FD.size, np.sum(invalid_regions) ))
 
 def main():
 

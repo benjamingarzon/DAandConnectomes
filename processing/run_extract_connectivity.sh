@@ -9,11 +9,12 @@ ATLAS=/home/benjamin.garzon/Data/DAD/parcellations/shen/fconn_atlas_150_2mm.nii
 MEAN_THR=0.3
 MAX_THR=5
 PROP_THR=0.3
+MAX_INVALID=20
 
 OUTDIR=/home/benjamin.garzon/Data/DAD/processed/fmriprep/connectomes/
 
 mkdir $OUTDIR
-echo "SUBJECT;TASK;RUN;FD_MEAN;FD_MAX;FD_2;FD_3" > $OUTDIR/FramewiseDisplacement.csv
+echo "SUBJECT;TASK;RUN;FD_MEAN;FD_MAX;FD_2;FD_3;INVALID" > $OUTDIR/FramewiseDisplacement.csv
 
 for TASK in GNG TAB RS; do
   rm $OUTDIR/Subjects_${TASK}.txt
@@ -49,10 +50,12 @@ for TASK in GNG TAB RS; do
       FD_MEAN=`echo $FD | cut -d';' -f1`
       FD_MAX=`echo $FD | cut -d';' -f2`
       FD_3=`echo $FD | cut -d';' -f4`
+      INVALID=`echo $FD | cut -d';' -f5`
 
     if [ $(bc <<< "$FD_MEAN <= $MEAN_THR") -eq 1 ] && 
        [ $(bc <<< "$FD_MAX <= $MAX_THR") -eq 1 ] && 
-       [ $(bc <<< "$FD_3 <= $PROP_THR") -eq 1 ]; 
+       [ $(bc <<< "$FD_3 <= $PROP_THR") -eq 1 ] &&
+       [ $(bc <<< "$INVALID <= $MAX_INVALID") -eq 1 ];
     then
         LIST="$LIST $OUTPUT"
     fi

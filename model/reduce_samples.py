@@ -26,12 +26,12 @@ def reduce_samples(args):
     for line in f_in:
         l = l + 1 
         print l, block
-        print("Reading line %d of %s."%(l, args.input_file))
-
+        #print("Reading line %d of %s."%(l, args.input_file))
+	line = line.rstrip()
 	if block == 0: 	
-
+	
 	    if line[0] == "#": 	
-	         print("Skipping line: %s"%line[:-1])
+	         print("Skipping line: %s"%line)
 		
 	    else:
                 block += 1
@@ -40,20 +40,21 @@ def reduce_samples(args):
                 indices = np.array([i for i, param in enumerate(params) if all([re.search(r"\b%s"%myparam, param)==None for myparam in args.params]) ])
                 new_header = ",".join( params[i] for i in indices )
                 f_out.write(new_header)
-#                f_out.write("\n")
-
+		f_out.write("\n")
+		
         elif ( line[0] != "#" ) and ( len(line) > 1 ): 	
 
             values = np.array(string.split(line, sep=","))
-            if mcmc and block == 2:
+	     
+            if mcmc and block == 2: # write sampling but not warmup
     	        f_out.write(",".join(values[indices]))
-#                f_out.write("\n")
+	        f_out.write("\n")
+
             elif not mcmc:
     	        f_out.write(",".join(values[indices]))
-#                f_out.write("\n")
-
+	        f_out.write("\n")
 	else:
-             print("Skipping line: %s"%line[:-1])	
+             print("Skipping line: %s"%line)	
 
              if re.search("terminated", line)!=None:
                  block += 1		

@@ -25,13 +25,14 @@ def simplify_samples(args):
     for line in f_in:
         l = l + 1 
 #        print("Reading line %d of %s."%(l, args.input_file))
-
+	line = line.rstrip()
 	if block == 0: 	
 
 	    if line[0] == "#": 	
 #                print("Commented line: %s"%line[:-1])
                 f_out.write(line)
-	
+                f_out.write("\n")	
+
 	    else:
                 block += 1
 		header = line
@@ -39,17 +40,18 @@ def simplify_samples(args):
                 indices = np.array([i for i, param in enumerate(params) if all([re.search(r"\b%s"%myparam, param)==None for myparam in args.params]) ])
                 new_header = ",".join( params[i] for i in indices )
                 f_out.write(new_header)
-#                f_out.write("\n")
+                f_out.write("\n")
 
         elif ( line[0] != "#" ) and ( len(line) > 1 ): 	
 
             values = np.array(string.split(line, sep=","))
             f_out.write(",".join(values[indices]))
-#            f_out.write("\n")
+            f_out.write("\n")
 
 	else:
 #            print("Commented line: %s"%line[:-1])
             f_out.write(line)
+            f_out.write("\n")
 
     print("Total number of parameters is %d."%len(params))
     print("Reduced number of parameters is %d."%len(indices))
