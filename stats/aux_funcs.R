@@ -18,6 +18,7 @@ library(mvtnorm)
 library(parallel)
 library(mice)
 library(rstan)
+library(scales)
 #library(caret)
 #library(glmnet)
 
@@ -55,7 +56,7 @@ CEX_LAB=2 + 1
 CEX_NAMES=1.5
 CEX_LEG=2
 CEX_MAIN=2
-MYCEX = 3
+MYCEX = 2
 MYDEFAULTCEX = 3
 
 MYMGP = c(5, 1.5, 0)
@@ -88,7 +89,7 @@ NVALUES = 21
 #NVALUES = 5
 
 
-plot_adj = function(adj, modules_file, lim=NULL, pal=MYPALETTE, nolegend=FALSE, use.valid=T){
+plot_adj = function(adj, modules_file, lim=NULL, pal=MYPALETTE, nolegend=FALSE, use.valid=T, main = NULL){
   
   # plot adjacency matrix
   load(modules_file)
@@ -114,7 +115,7 @@ plot_adj = function(adj, modules_file, lim=NULL, pal=MYPALETTE, nolegend=FALSE, 
   midpoints = (c(0.5, breaks) + c(breaks, maxval )) / 2
   
   molten_adj = melt(adj)
-  plot_data = rename(molten_adj, from = X1, to = X2) 
+  plot_data = rename(molten_adj, from = Var1, to = Var2) 
   
   if (nolegend) {
     
@@ -155,7 +156,7 @@ plot_adj = function(adj, modules_file, lim=NULL, pal=MYPALETTE, nolegend=FALSE, 
   if (is.null(lim)) {
     #lim = max(abs(adj), na.rm=TRUE)
     lim = 1
-    lim1 = quantile(abs(adj), .95, na.rm=TRUE)
+    lim1 = quantile(abs(adj), .95, na.rm=F)
     lim0 = -lim1 
   }
   
@@ -174,13 +175,14 @@ plot_adj = function(adj, modules_file, lim=NULL, pal=MYPALETTE, nolegend=FALSE, 
     lim1 = quantile(abs(adj), .95, na.rm=TRUE)
   }  
    
-  if (0 < lim ) {
+  if (lim > 0) {
     myplot <- ggplot(plot_data, aes(x = from, y = to, fill = value)) +
       geom_raster() +
       theme_bw() +
       theme_new + 
       scale_fill_gradientn(colours = pal, 
-                           limits=c(lim0, lim1), na.value = "white") #+
+                           limits=c(lim0, lim1), 
+                           oob = squish) #+, na.value = "black"
     #  scale_y_reverse()
   }
   
@@ -210,7 +212,9 @@ plot_adj = function(adj, modules_file, lim=NULL, pal=MYPALETTE, nolegend=FALSE, 
       annotate("text", y = -.5, x = midpoints[i], label = module_names[i], size = MYTEXTSIZE, hjust=1, angle=90) 
   }
   
-  myplot = myplot + ylim(-10, maxval) + xlim(-10, maxval)
+  myplot = myplot + ylim(-10, maxval) + xlim(-10, maxval) 
+  if (!is.null(main)) myplot = myplot + ggtitle(main) + theme(plot.title = element_text(hjust = 0.5, size = GGTEXTSIZE2 + 5))
+  
   print(myplot)
 }
 
@@ -429,6 +433,32 @@ evaluate_averages = function(PARAMS_FILE, MODULES_FILE, ICN, bymodules = FALSE){
   )
 }
 
+evaluate_averages_MAP = function(X, MODULES_FILE, ICN, bymodules = FALSE){
+  print("Evaluating averages for model")
+  print(X)
+  
+  if (!bymodules) {
+    # slope_muc.average = average_params_variability(X$slope_muc, MODULES_FILE, ICN=ICN)
+    # intercept_muc.average = average_params_variability(X$intercept_muc, MODULES_FILE, ICN=ICN)
+    # log_slope_sigmac.average = average_params_variability(X$log_slope_sigmac, MODULES_FILE, ICN=ICN)
+    # log_intercept_sigmac.average = average_params_variability(X$log_intercept_sigmac, MODULES_FILE, ICN=ICN)
+  } else {
+    slope_muc.average = average_params_modules(X$slope_muc, MODULES_FILE, ICN=ICN)
+    intercept_muc.average = average_params_modules(X$intercept_muc, MODULES_FILE, ICN=ICN)
+    log_slope_sigmac.average = average_params_modules(X$log_slope_sigmac, MODULES_FILE, ICN=ICN)
+    log_intercept_sigmac.average = average_params_modules(X$log_intercept_sigmac, MODULES_FILE, ICN=ICN)
+  }
+  
+  return(list(
+    slope_muc = slope_muc.average, 
+    intercept_muc = intercept_muc.average,
+    log_slope_sigmac = log_slope_sigmac.average, 
+    log_intercept_sigmac = log_intercept_sigmac.average)
+  )
+}
+
+
+
 predict_value = function(age.ref, PARAMS_FILE, musigma="mu"){
   print(paste("Predicting value for model in file: ", PARAMS_FILE))
   
@@ -566,20 +596,17 @@ compute_degree_samples = function(X, modules_file, labels_file, modular=F){
   return(degree)
 }
 
-plot_correl = function(y, x, ylab, xlab, valid=abs(y)>=0, cex=MYDEFAULTCEX, asp = -1, right = F ){
+plot_correl = function(y, x, ylab, xlab, valid=abs(y)>=0, cex=MYDEFAULTCEX, asp = -1, right = F, main = "" ){
   c = cor.test(x[valid], y[valid])
   r = format(round(c$estimate, 3), nsmall=3)
-  plot(x[valid], y[valid], xlab=xlab, ylab=ylab, pch=20, cex=cex, cex.axis=CEX_AXIS, cex.lab=CEX_LAB, asp = asp, main="")
+  plot(x[valid], y[valid], xlab=xlab, ylab=ylab, pch=20, cex=cex, cex.axis=CEX_AXIS, cex.lab=CEX_LAB, asp = asp, main=main)
   
-  if (c$p.value<=0.05) {
-    model = lm(y[valid] ~ x[valid])
-    abline(model, lwd=LWD)
-  }
+  model = lm(y[valid] ~ x[valid])
+  abline(model, lwd=LWD + 2, lty = ifelse(c$p.value<=0.05, 1 , 2))
   
   if (asp==1) {
     abline(0, 1, lwd=LWD, col="red")
   }
-  
   
   options(scipen=3)
   if (c$p.value>=0.001) {
@@ -589,9 +616,11 @@ plot_correl = function(y, x, ylab, xlab, valid=abs(y)>=0, cex=MYDEFAULTCEX, asp 
   }
   else p = 0
   
+  symbol = ifelse(c$p.value<=0.05, "*", "")
+  
   side = ifelse(right, "topright", "topleft")   
   
-  legend(side, legend = c( paste0('r=', r), paste0('p=', p)), bty="n", cex=CEX_LEG + 1)
+  legend(side, legend = c( paste0('r=', r), paste0('p=', p, symbol)), bty="n", cex=CEX_LEG + 1)
   
 }
 
@@ -648,7 +677,8 @@ plot_similarities = function(FC.ordered, sorted.age, line=NULL){
   D = adj_cor(FC.ordered)
   
   molten_D = melt(D)
-  plot_data = rename(molten_D, from = X1, to = X2)
+
+  plot_data = dplyr::rename(molten_D, from = Var1, to = Var2)
   plot_data$age.1 = sorted.age[plot_data$from]
   plot_data$age.2 = sorted.age[plot_data$to]
   
@@ -668,8 +698,9 @@ plot_similarities = function(FC.ordered, sorted.age, line=NULL){
       legend.text = element_text(size=GGTEXTSIZE2 + 15),
       legend.title = element_blank(), 
       aspect.ratio = 1) +
-    scale_fill_gradientn(colours = colorspace::diverge_hsv(15), 
-                         limits=c(0, 1), na.value = "white")
+      scale_fill_distiller(palette = "Spectral") 
+    #scale_fill_gradientn(colours = colorspace::diverge_hsv(15), 
+    #                     limits=c(0, 1), na.value = "black")
   
   if (!is.null(line)){
     
@@ -692,10 +723,7 @@ plot_mds = function(FC, group){
   D.old = squareform2(D[group=='Old', group=='Old'])
   D.young = squareform2(D[group=='Young', group=='Young'])
   D.oldyoung = D[group=='Old', group=='Young']
-
-  print(t.test(D.old, D.young))
-  print(t.test(D.old, D.oldyoung))
-
+  
   mds = cmdscale(as.dist(1 - D), eig=T, k=2)
   x1 = mds$points[, 1]
   x2 = mds$points[, 2]
@@ -703,7 +731,15 @@ plot_mds = function(FC, group){
   
   plot(x1, x2, pch = ifelse(group=="Young", 2, 1), xlab='Dimension 1', ylab='Dimension 2', cex = 4, cex.lab = 3, cex.axis = 3, lwd = 11)
   
-  legend("bottomleft", legend=c("Younger", "Older"), pch = c(2, 1), cex = CEX_LEG + 2, lwd = 11, lty = 0)
+  legend("topleft", legend=c("Younger", "Older"), pch = c(2, 1), cex = CEX_LEG + 1, lwd = 11, lty = 0)
+
+  told_young = t.test(D.old, D.young)
+  told_oldyoung = t.test(D.old, D.oldyoung)
+  
+  print(told_young)
+  print(told_young$statistic)
+  print(told_oldyoung)
+  print(told_oldyoung$statistic)
   
 }
 
@@ -778,7 +814,7 @@ plot_connection_removal = function(FC.ordered, values, conn.order, group1, group
     #image(apply(d.ordered.sampled, c(1, 2), mean), main=paste("Shuffled", p), zlim = conlims, asp = 1)
   }
   
-  plot(removed, var.ordered, type="b", col="red", lwd=3, pch=20, cex.axis=CEX_AXIS, cex.lab=CEX_LAB, cex.main = CEX_MAIN+2, ylim=c(0.3, 0.5),
+  plot(removed, var.ordered, type="b", col="red", lwd=3, pch=20, cex.axis=CEX_AXIS, cex.lab=CEX_LAB, cex.main = CEX_MAIN+2, ylim=c(0.3, 0.55),
        ylab="Average similarity between subjects", xlab = "Number of removed connections", main = main)
   
   for (i in 1:NREPS) lines(removed, var.ordered.sampled[i,], type="b", col="blue", pch=20, cex = 0.5)
@@ -809,8 +845,7 @@ plot_connectome_removal = function(input_file, demo, conn.order.mu, conn.order.s
   FC.ordered = as.matrix(arrange(data.frame(FC), age))
   sorted.age = sort(age)
   group.ordered = as.matrix(arrange(data.frame(group), age))
-#  par(mfrow=c(2, 2), mar=c(8,8,5,5), mgp=c(4,1,0))
-  
+
   save_fig(figname=paste0(figname,"a"), res=BWRES)
   par(mar=c(8,8,5,5), mgp=c(5,2,0))
   plot_connection_removal(FC.ordered, values_mu, conn.order.mu, 'Young', 'Old', expression("Ordering by |" * beta[mu] * "|, Younger-Older"), group.ordered, expression("|"*beta[mu]*"|"), lim=lim.muc)
@@ -821,11 +856,11 @@ plot_connectome_removal = function(input_file, demo, conn.order.mu, conn.order.s
 
   save_fig(figname=paste0(figname,"c"), res=BWRES)
   par(mar=c(8,8,5,5), mgp=c(5,2,0))
-  plot_connection_removal(FC.ordered, values_sigma, conn.order.sigma, 'Young', 'Old', expression("Ordering by " * beta[sigma] * ", Young-Older"), group.ordered, expression(""*beta[sigma]*""), lim = lim.sigmac)
+  plot_connection_removal(FC.ordered, values_sigma, conn.order.sigma, 'Young', 'Old', expression("Ordering by |" * beta[sigma] * "|, Younger-Older"), group.ordered, expression("|"*beta[sigma]*"|"), lim = lim.sigmac)
 
   save_fig(figname=paste0(figname,"d"), res=BWRES)
   par(mar=c(8,8,5,5), mgp=c(5,2,0))
-  plot_connection_removal(FC.ordered, values_sigma, conn.order.sigma, 'Old', 'Old', expression("Ordering by " * beta[sigma] * ", Older-Older"), group.ordered, expression(""*beta[sigma]*""), lim= lim.sigmac)
+  plot_connection_removal(FC.ordered, values_sigma, conn.order.sigma, 'Old', 'Old', expression("Ordering by |" * beta[sigma] * "|, Older-Older"), group.ordered, expression("|"*beta[sigma]*"|"), lim= lim.sigmac)
   
 }
 
@@ -867,14 +902,14 @@ normal_pattern_sim = function(input_file, demo, test, permute=FALSE, beta_mu=NUL
   
   load(modules_file)
   WMnets = (cogICNs[rownames(cogICNs)=='Cognition.Memory.Working', ] > 0)
-  
   WMnetwork = drop(outer(WMnets, WMnets, FUN="|"))
   
   sel = c(squareform2(WMnetwork), diag(WMnetwork))
   sel2 = beta_mu < median(beta_mu, na.rm=T)
   #sel = sel & sel2
   mean.young = colMeans(FC[group=="Young", sel])
-  weights = beta_mu[sel] # - max(beta_mu, na.rm = T)
+  weights =  1#abs(beta_mu[sel])^2 # - max(beta_mu, na.rm = T)
+  
   similarity = apply(FC[group=="Old", sel], 1, function(x) cor.test(weights*x, weights*mean.young)$estimate )
 #  deviation = sqrt(rowSums((beta_mu[sel]*diffs)^2) )
   cortest = pcor.test(similarity, cogscore[group=="Old"], age[group=="Old"])
@@ -936,8 +971,8 @@ associate_cognition_modules = function(input_file, demo, test, permute=FALSE, be
   
   cors.old.adj = get_adj_modules(cors.old, modules_file)
   
-  save_fig(res=CRES)
-  plot_matrix(cors.old.adj)
+  # save_fig(res=CRES)
+  # plot_matrix(cors.old.adj)
   
   q.beta_mu = quantile(beta_mu, c(.3, .7))
   q.beta_sigma = quantile(beta_sigma, c(.3, .7))
@@ -953,10 +988,10 @@ associate_cognition_modules = function(input_file, demo, test, permute=FALSE, be
   colors = c("red", "blue", "green", "orange")
   old.means = aggregate(cors.old[indices], by = list(clus), FUN=mean)
 
-  save_fig()
-  par(mfrow=c(1,1))
-  plot(jitter(clus, factor=.7), cors.old[indices], pch=20, col = colors[clus], xlab="", ylab="Association with WM score", xlim=c(0.5, 4.5), ylim = c(-.7, .7) , cex=0.8) 
-  points(seq(4), old.means$x, col = "black", cex = 4, pch=3)
+  # save_fig()
+  # par(mfrow=c(1,1))
+  # plot(jitter(clus, factor=.7), cors.old[indices], pch=20, col = colors[clus], xlab="", ylab="Association with WM score", xlim=c(0.5, 4.5), ylim = c(-.7, .7) , cex=0.8) 
+  # points(seq(4), old.means$x, col = "black", cex = 4, pch=3)
   
   return(association.score)
   
@@ -985,27 +1020,6 @@ model.cognitive.association = function(association.score, slope_muc, log_slope_s
   
   save_fig(figname  = figname, res=CRES)
   
-#   blank_theme <- theme_minimal() +
-#     theme(
-#       axis.title.x = element_text(size = GGTEXTSIZE2),
-#       axis.title.y = element_text(size = GGTEXTSIZE2),
-#       panel.grid = element_blank(),
-#       axis.text.x = element_text(size = GGTEXTSIZE2), 
-#       axis.text.y = element_text(size = GGTEXTSIZE2),
-#       legend.title = element_blank(), 
-#       legend.text = element_text(size = GGTEXTSIZE2)
-#     )
-#   
-#   slopes = data.frame(slope_muc = slope_muc, log_slope_sigmac=log_slope_sigmac) 
-#   
-#   myplot <- ggplot(d, aes(x=beta_mu, y=beta_sigma, z=z)) + 
-#     geom_tile(aes(fill=z)) + scale_fill_gradientn(limits=c(-.3, .3), colours=MYPALETTE) + #scale_fill_gradient2(limits=c(-.3, .3), low="blue", high="red") +
-#     geom_point(data = slopes, aes(x=slope_muc, y= log_slope_sigmac, z=NULL), alpha=0.3, size=0.5) +
-#     xlab(expression(beta[mu])) + ylab(expression(beta[sigma])) + blank_theme + ylim(.001, .008) +  xlim(-.004, .002) 
-# 
-#   print(myplot)
-  #model.diff = lm(association.score ~ slope_muc.scaled + intercept_muc.scaled + log_intercept_sigmac.scaled )
-  #print(summary(model.diff))
   par(mar=c(8,8,5,5), mgp=c(5,2,0))
   plot_correl(association.score[!is.na(association.score)], 
               slope_muc[!is.na(association.score)],
@@ -1014,14 +1028,8 @@ model.cognitive.association = function(association.score, slope_muc, log_slope_s
               #cex = 1,
               right = T)
   }            
-  #plot_correl(model.diff$residuals, 
-  #            log_slope_sigmac[!is.na(association.score)],
-  #            "Difference (Younger - Older) in association score with WM (residuals)", 
-  #            expression(bar(beta)[sigma]), 
-  #            cex = 0.5)
-  
-  #print(cor.test(log_slope_sigmac.scaled[!is.na(association.score)], model.diff$residuals ))
-return(coefs)
+
+  return(coefs)
 }
 
 model.cognitive.association_2groups = function(association.score, slope_muc, log_slope_sigmac, figname, intercept_muc=NULL, log_intercept_sigmac=NULL){
@@ -1162,6 +1170,8 @@ cluster_params_2points = function(mu.1, mu.2, beta_sigma, mu.1.zeros, mu.2.zeros
   
   return(clusters)
 }
+
+
 
 cluster_params_manual = function(beta_mu, beta_sigma, beta_mu.zeros, beta_sigma.zeros, pal, figname){
   
@@ -1389,8 +1399,10 @@ average_params_variability = function(values, modules_file, ICN){
 }
 
 average_params_variability_modules = function(values, modules_file, ICN){
-  
+  values = t(as.matrix(values))
   nsamples = nrow(values)
+  
+  print(nsamples)
   load(modules_file)
   
   weights = as.matrix(cogICNs)
@@ -1457,7 +1469,7 @@ plot_matrix = function(adj, lim=NULL, pal=MYPALETTE){ #colorspace::diverge_hsv(1
   seq_names = seq(length(adj_names))
   rownames(adj) = colnames(adj) = seq_names
   molten_adj = melt(adj)
-  plot_data = rename(molten_adj, from = X1, to = X2) 
+  plot_data = rename(molten_adj, from = Var1, to = Var2) 
   
   theme_new = theme(
     panel.grid.major = element_blank(),
@@ -1924,8 +1936,8 @@ plot_pies = function(adj, modules_file, pal=MYPALETTE){
     
     plot_data = rbind(plot_data, molten)
   }
-  plot_data$from = factor(module_names[plot_data$X1], levels = module_names)
-  plot_data$to = factor(module_names[plot_data$X2], levels = module_names)
+  plot_data$from = factor(module_names[plot_data$Var1], levels = module_names)
+  plot_data$to = factor(module_names[plot_data$Var2], levels = module_names)
   
   
   blank_theme <- theme_minimal()+
@@ -1995,5 +2007,12 @@ lichtrubin <- function(p){
 }
 
 
+plot_layout = function(x, modules_file, figname, main){
+  
+  adj = get_adj(x, modules_file, labels_file = LABELS_FILE)
+  save_fig(figname = figname, res = CRES)
+  plot_adj(adj, modules_file, main = main) 
+  
+}
 
 

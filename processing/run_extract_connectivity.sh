@@ -12,8 +12,11 @@ PROP_THR=0.3
 MAX_INVALID=20
 
 OUTDIR=/home/benjamin.garzon/Data/DAD/processed/fmriprep/connectomes/
+OUTDIR=/home/benjamin.garzon/Data/DAD/processed/fmriprep/connectomes_noGSR/
 
 mkdir $OUTDIR
+mkdir $OUTDIR/modules/
+
 echo "SUBJECT;TASK;RUN;FD_MEAN;FD_MAX;FD_2;FD_3;INVALID" > $OUTDIR/FramewiseDisplacement.csv
 
 for TASK in GNG TAB RS; do
@@ -43,7 +46,6 @@ for TASK in GNG TAB RS; do
       awk '{print $3}' $CONFOUNDS > $GLOBAL
       awk '{print $7}' $CONFOUNDS > $FRAMEWISE
       FD=`./extract_connectivity.py $INPUT $ATLAS $MASK $CONFOUNDS $OUTPUT 2.0 full 0`
-#      ./extract_connectivity.py $INPUT $ATLAS $MASK $CONFOUNDS $OUTPUT 2.0 full 0
       echo "${SUBJECT};${TASK};${RUN};$FD" >> $OUTDIR/FramewiseDisplacement.csv
 
       # select based on criteria

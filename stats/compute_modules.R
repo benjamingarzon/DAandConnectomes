@@ -1,9 +1,12 @@
 
 # Average the parameters over anatomical and BrainMap modules
-WORKDIR="~/Data/DAD/processed/fmriprep"
+WORKDIR="~/Data/DAD/processedGSR"
+#WORKDIR="~/Data/DAD/processedNOGSR"
 PARCDIR="~/Data/DAD/parcellations"
 
-FIGS_DIR = file.path(WORKDIR, "connectomes/modules/")
+CONN_FOLDER = ""
+
+FIGS_DIR = file.path(WORKDIR, CONN_FOLDER, "modules/")
 unlink(paste0(FIGS_DIR, '*'))
 fig_count = 0
 HCTHRESH = 0.42 # hierachical clustering threshold
@@ -19,27 +22,35 @@ MODULES_FILE_MNI_RED=file.path(PARCDIR, "shen/modules_MNI_reduced.RData")
 MODULES_FILE_20="~/Data/DAD/ICNs/Laird/modules.RData"
 MODULES_FILE_70="~/Data/DAD/ICNs/Ray/modules.RData"
 
-INPUT_FILE.TAB=file.path(WORKDIR, 'connectomes/TAB/zFC_all_150.mat')
-INPUT_FILE.GNG=file.path(WORKDIR, 'connectomes/GNG/zFC_all_150.mat')
-INPUT_FILE.RS=file.path(WORKDIR, 'connectomes/RS/zFC_all_150.mat')
+#INPUT_FILE.TAB=file.path(WORKDIR, CONN_FOLDER, 'TAB/zFC_all_150.mat')
+#INPUT_FILE.GNG=file.path(WORKDIR, CONN_FOLDER, 'GNG/zFC_all_150.mat')
+#INPUT_FILE.RS=file.path(WORKDIR, CONN_FOLDER, 'RS/zFC_all_150.mat')
 
-INPUT_FILE.TAB.valid=file.path(WORKDIR, 'connectomes/TAB/zFC_all_150_valid.mat')
-INPUT_FILE.GNG.valid=file.path(WORKDIR, 'connectomes/GNG/zFC_all_150_valid.mat')
-INPUT_FILE.RS.valid=file.path(WORKDIR, 'connectomes/RS/zFC_all_150_valid.mat')
+#INPUT_FILE.TAB.valid=file.path(WORKDIR, CONN_FOLDER, 'TAB/zFC_all_150_valid.mat')
+#INPUT_FILE.GNG.valid=file.path(WORKDIR, CONN_FOLDER, 'GNG/zFC_all_150_valid.mat')
+#INPUT_FILE.RS.valid=file.path(WORKDIR, CONN_FOLDER, 'RS/zFC_all_150_valid.mat')
 
-INPUT_FILE.TAB.mod.20=file.path(WORKDIR, 'connectomes/TAB/modules/zFC_all_150_TAB_20.mat')
-INPUT_FILE.GNG.mod.20=file.path(WORKDIR, 'connectomes/GNG/modules/zFC_all_150_GNG_20.mat')
-INPUT_FILE.RS.mod.20=file.path(WORKDIR, 'connectomes/RS/modules/zFC_all_150_RS_20.mat')
+INPUT_FILE.TAB=file.path(WORKDIR, CONN_FOLDER, 'TAB/Connectome0.3/zFC_all_150_0.3_TAB.mat')
+INPUT_FILE.GNG=file.path(WORKDIR, CONN_FOLDER, 'GNG/Connectome0.3/zFC_all_150_0.3_GNG.mat')
+INPUT_FILE.RS=file.path(WORKDIR, CONN_FOLDER, 'RS/Connectome0.4/zFC_all_150_0.4_RS.mat')
 
-INPUT_FILE.TAB.mod.70=file.path(WORKDIR, 'connectomes/TAB/modules/zFC_all_150_TAB_70.mat')
-INPUT_FILE.GNG.mod.70=file.path(WORKDIR, 'connectomes/GNG/modules/zFC_all_150_GNG_70.mat')
-INPUT_FILE.RS.mod.70=file.path(WORKDIR, 'connectomes/RS/modules/zFC_all_150_RS_70.mat')
+INPUT_FILE.TAB.valid=file.path(WORKDIR, CONN_FOLDER, 'TAB/zFC_all_150_valid.mat')
+INPUT_FILE.GNG.valid=file.path(WORKDIR, CONN_FOLDER, 'GNG/zFC_all_150_valid.mat')
+INPUT_FILE.RS.valid=file.path(WORKDIR, CONN_FOLDER, 'RS/zFC_all_150_valid.mat')
+
+INPUT_FILE.TAB.mod.20=file.path(WORKDIR, CONN_FOLDER, 'TAB/modules/zFC_all_150_TAB_20.mat')
+INPUT_FILE.GNG.mod.20=file.path(WORKDIR, CONN_FOLDER, 'GNG/modules/zFC_all_150_GNG_20.mat')
+INPUT_FILE.RS.mod.20=file.path(WORKDIR, CONN_FOLDER, 'RS/modules/zFC_all_150_RS_20.mat')
+
+INPUT_FILE.TAB.mod.70=file.path(WORKDIR, CONN_FOLDER, 'TAB/modules/zFC_all_150_TAB_70.mat')
+INPUT_FILE.GNG.mod.70=file.path(WORKDIR, CONN_FOLDER, 'GNG/modules/zFC_all_150_GNG_70.mat')
+INPUT_FILE.RS.mod.70=file.path(WORKDIR, CONN_FOLDER, 'RS/modules/zFC_all_150_RS_70.mat')
 
 ROI_VOL_FILE=file.path(PARCDIR, "shen/parc_shen_150.volume.csv")
 LABELS_FILE=file.path(PARCDIR, "shen/fconn_150_labels.txt")
 labels = read.csv(LABELS_FILE, header=TRUE, sep='\t')
 
-if( T ) {
+if( sync_modules ) {
   
 # ------------------------------------------------------------------------
 # sync valid indices
@@ -145,4 +156,5 @@ average_over_modules(INPUT_FILE.RS.valid, MODULES_FILE_20, INPUT_FILE.RS.mod.20)
 average_over_modules(INPUT_FILE.TAB.valid, MODULES_FILE_70, INPUT_FILE.TAB.mod.70)
 average_over_modules(INPUT_FILE.GNG.valid, MODULES_FILE_70, INPUT_FILE.GNG.mod.70)
 average_over_modules(INPUT_FILE.RS.valid, MODULES_FILE_70, INPUT_FILE.RS.mod.70)
-}
+} # end of optional part
+

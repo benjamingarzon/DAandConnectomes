@@ -57,7 +57,8 @@ def get_fc(func_mni_filename, atlas_filename, mask_filename, confounds_filename,
                      memory_level = 1, 
                      memory = 'nilearn_cache')
     
-    X = labelsmasker.fit_transform(func_mni_filename, confounds = global_signal)
+#    X = labelsmasker.fit_transform(func_mni_filename, confounds = global_signal)
+    X = labelsmasker.fit_transform(func_mni_filename)
     valid_voxels = labelsmasker.fit_transform(masker.inverse_transform(1*(signal > meansignal*SIGNAL_FR)))
 
     nvols = X.shape[0]
