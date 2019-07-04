@@ -1,14 +1,14 @@
 setwd('~/Software/DAD/DAandConnectomes/model/')
-source('./fit_models_connectome_MAP.R')
+source('./fit_models_connectome_MAP_covariate.R')
 
 # Run all the models
 
 HOME='/home/benjamin.garzon/'
 DIR='modellingMAP'
 
-STAN_FILE='age_model_single.stan'
+STAN_FILE='age_model_single_FD.stan'
 
-NCLUSTERS=20
+NCLUSTERS=10
 PRIORS_FILE='./priors/priors_MAP.csv'
 
 FITFCS = c(rep(0, 2), rep(1, 18))
@@ -39,40 +39,68 @@ INPUT_FILES = c(
 )
 
 OUTPUT_DIRS = c(
-  'Data/DAD/processed/PET/modellingMAP',
-  'Data/DAD/processed/VBM/modellingMAP',
+  'Data/DAD/processed/PET/modellingMAP_FD',
+  'Data/DAD/processed/VBM/modellingMAP_FD',
   
-  'Data/DAD/processedNOGSR/RS/modelling_modules_20MAP',
-  'Data/DAD/processedNOGSR/GNG/modelling_modules_20MAP',
-  'Data/DAD/processedNOGSR/TAB/modelling_modules_20MAP',
-  'Data/DAD/processedNOGSR/RS/modelling_modules_70MAP',
-  'Data/DAD/processedNOGSR/GNG/modelling_modules_70MAP',
-  'Data/DAD/processedNOGSR/TAB/modelling_modules_70MAP',
-  'Data/DAD/processedNOGSR/RS/modellingMAP',
-  'Data/DAD/processedNOGSR/GNG/modellingMAP',
-  'Data/DAD/processedNOGSR/TAB/modellingMAP',
+  'Data/DAD/processedNOGSR_FD/RS/modelling_modules_20MAP',
+  'Data/DAD/processedNOGSR_FD/GNG/modelling_modules_20MAP',
+  'Data/DAD/processedNOGSR_FD/TAB/modelling_modules_20MAP',
+  'Data/DAD/processedNOGSR_FD/RS/modelling_modules_70MAP',
+  'Data/DAD/processedNOGSR_FD/GNG/modelling_modules_70MAP',
+  'Data/DAD/processedNOGSR_FD/TAB/modelling_modules_70MAP',
+  'Data/DAD/processedNOGSR_FD/RS/modellingMAP',
+  'Data/DAD/processedNOGSR_FD/GNG/modellingMAP',
+  'Data/DAD/processedNOGSR_FD/TAB/modellingMAP',
   
-  'Data/DAD/processedGSR/RS/modelling_modules_20MAP',
-  'Data/DAD/processedGSR/GNG/modelling_modules_20MAP',
-  'Data/DAD/processedGSR/TAB/modelling_modules_20MAP',
-  'Data/DAD/processedGSR/RS/modelling_modules_70MAP',
-  'Data/DAD/processedGSR/GNG/modelling_modules_70MAP',
-  'Data/DAD/processedGSR/TAB/modelling_modules_70MAP',
-  'Data/DAD/processedGSR/RS/modellingMAP',
-  'Data/DAD/processedGSR/GNG/modellingMAP',
-  'Data/DAD/processedGSR/TAB/modellingMAP'
+  'Data/DAD/processedGSR_FD/RS/modelling_modules_20MAP',
+  'Data/DAD/processedGSR_FD/GNG/modelling_modules_20MAP',
+  'Data/DAD/processedGSR_FD/TAB/modelling_modules_20MAP',
+  'Data/DAD/processedGSR_FD/RS/modelling_modules_70MAP',
+  'Data/DAD/processedGSR_FD/GNG/modelling_modules_70MAP',
+  'Data/DAD/processedGSR_FD/TAB/modelling_modules_70MAP',
+  'Data/DAD/processedGSR_FD/RS/modellingMAP',
+  'Data/DAD/processedGSR_FD/GNG/modellingMAP',
+  'Data/DAD/processedGSR_FD/TAB/modellingMAP'
 
 )
 
+COVARIATE_FILES = c(
+  '~/Data/DAD/FD.mean.csv',
+  '~/Data/DAD/FD.mean.csv',
+
+  '~/Data/DAD/FD.RS.csv',
+  '~/Data/DAD/FD.GNG.csv',
+  '~/Data/DAD/FD.TAB.csv',
+  '~/Data/DAD/FD.RS.csv',
+  '~/Data/DAD/FD.GNG.csv',
+  '~/Data/DAD/FD.TAB.csv',
+  '~/Data/DAD/FD.RS.csv',
+  '~/Data/DAD/FD.GNG.csv',
+  '~/Data/DAD/FD.TAB.csv',
+  
+  '~/Data/DAD/FD.RS.csv',
+  '~/Data/DAD/FD.GNG.csv',
+  '~/Data/DAD/FD.TAB.csv',
+  '~/Data/DAD/FD.RS.csv',
+  '~/Data/DAD/FD.GNG.csv',
+  '~/Data/DAD/FD.TAB.csv',
+  '~/Data/DAD/FD.RS.csv',
+  '~/Data/DAD/FD.GNG.csv',
+  '~/Data/DAD/FD.TAB.csv'
+)
+
+
 n_models = length(INPUT_FILES)
 
-for (m in seq(n_models)) {
-  dir.create(file.path(HOME, OUTPUT_DIRS[m]))
+#for (m in seq(n_models)) {
+for (m in seq(2)) {
+    dir.create(file.path(HOME, OUTPUT_DIRS[m]))
   fit_models_connectome(
   file.path(HOME, INPUT_FILES[m]),
   file.path(HOME, OUTPUT_DIRS[m], 'params.csv'), 
   STAN_FILE,
   PRIORS_FILE, 
   FITFCS[m], 
-  NCLUSTERS)
+  NCLUSTERS,
+  COVARIATE_FILES[m])
 }

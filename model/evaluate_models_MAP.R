@@ -10,11 +10,11 @@ parnames = c('intercept_muc',
 MODULES_FILE_20="~/Data/DAD/ICNs/Laird/modules.RData"
 MODULES_FILE_70="~/Data/DAD/ICNs/Ray/modules.RData"
 
-OUTPUT_FILE="~/Data/DAD/analysis_variability/dataScrubNOGSR.Rdata"
-WDFC = "~/Data/DAD/processedNOGSR/"
+#OUTPUT_FILE="~/Data/DAD/analysis_variability/dataScrubNOGSR_FD.Rdata"
+#WDFC = "~/Data/DAD/processedNOGSR_FD/"
 
-OUTPUT_FILE="~/Data/DAD/analysis_variability/dataScrubGSR.Rdata"
-WDFC = "~/Data/DAD/processedGSR/"
+OUTPUT_FILE="~/Data/DAD/analysis_variability/dataScrubGSR_FD.Rdata"
+WDFC = "~/Data/DAD/processedGSR_FD/"
 
 getparams = function(WD, TASK, MODEL_DIR, MODULES_FILE=NULL, IS_FC = FALSE, bymodules= FALSE){
     print('################################')
@@ -49,7 +49,7 @@ getparams = function(WD, TASK, MODEL_DIR, MODULES_FILE=NULL, IS_FC = FALSE, bymo
 }
 
 
-MODEL_DIR = "modellingMAP"
+MODEL_DIR = "modellingMAP_FD"
 USEMCMC = T
 
 WD="~/Data/DAD/processed/"

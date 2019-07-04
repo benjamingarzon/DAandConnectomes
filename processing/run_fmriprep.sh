@@ -5,6 +5,7 @@ WD=$HOMEDIR/processed/fmriprep
 WORK=$HOMEDIR/processed/work
 
 # create singularity file container
+#cd /tmp
 #docker run --privileged -t --rm \
 #    -v /var/run/docker.sock:/var/run/docker.sock \
 #    -v /tmp/fmriprep:/output \

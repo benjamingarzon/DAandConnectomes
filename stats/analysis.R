@@ -17,15 +17,16 @@ source("./model/evaluate_models_MAP.R")
 
 CONN_FOLDER = "" # connectomes 
 #GSR
-#WORKDIR="~/Data/DAD/processedGSR/"
-#FIGS_DIR = "~/Data/DAD/analysis_variability/figsGSR/"
-#DATA_FILE = "~/Data/DAD/analysis_variability/dataScrubGSR.Rdata"
+WORKDIR="~/Data/DAD/processedGSR/"
+FIGS_DIR = "~/Data/DAD/analysis_variability/figsGSR_FD/"
+DATA_FILE = "~/Data/DAD/analysis_variability/dataScrubGSR_FD.Rdata"
+IMAGE_FILE= "~/Data/DAD/analysis_variability/imageGSR_FD.Rdata"
 
 #NO GSR
- WORKDIR="~/Data/DAD/processedNOGSR/"
- FIGS_DIR = "~/Data/DAD/analysis_variability/figsNOGSR/"
- DATA_FILE = "~/Data/DAD/analysis_variability/dataScrubNOGSR.Rdata"
-
+# WORKDIR="~/Data/DAD/processedNOGSR/"
+# FIGS_DIR = "~/Data/DAD/analysis_variability/figsNOGSR_FD/"
+# DATA_FILE = "~/Data/DAD/analysis_variability/dataScrubNOGSR_FD.Rdata"
+# IMAGE_FILE= "~/Data/DAD/analysis_variability/imageNOGSR_FD.Rdata"
 
 INPUT_FILE.TAB=file.path(WORKDIR, CONN_FOLDER, 'TAB/zFC_all_150_valid.mat')
 INPUT_FILE.GNG=file.path(WORKDIR, CONN_FOLDER, 'GNG/zFC_all_150_valid.mat')
@@ -341,11 +342,11 @@ plot_correl(log_slope_sigmac.GNG.degree, log_slope_sigmac.PET, expression("Avera
 
 
 # which regins have largest dopamine loss ?
-print(labels[means.PET$slope_muc < -0.007, ])
+print(labels[means.PET$slope_muc < -0.01, ])
 
 # is the correlation still there if I remove those regions
 slope_muc.PET.subset  = slope_muc.PET
-slope_muc.PET.subset[slope_muc.PET < - 0.007] = NA
+slope_muc.PET.subset[slope_muc.PET < - 0.01] = NA
 
 save_fig(figname="Figure_BetaMu_FxBP_subset", res=BWRES)
 par(mar=c(8,9,5,5), mgp=MYMGP, mfrow=c(1,3))
@@ -356,32 +357,32 @@ plot_correl(slope_muc.RS.degree, slope_muc.PET, expression("Average nodal " ~ be
 #VBM
 save_fig(figname="Figure_BetaMu_FxVBM_GNG", res=BWRES)
 par(mar=c(8,9,5,5), mgp=MYMGP)
-plot_correl(slope_muc.GNG.degree, slope_muc.VBM, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for GMV"), !is.na(slope_muc.GNG.degree), right = T)
-#plot_correl(log_slope_sigmac.GNG.degree, slope_muc.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[mu] ~ "for GMV"), !is.na(log_slope_sigmac.GNG.degree))
+plot_correl(slope_muc.GNG.degree, slope_muc.VBM, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for GMD"), !is.na(slope_muc.GNG.degree), right = T)
+#plot_correl(log_slope_sigmac.GNG.degree, slope_muc.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[mu] ~ "for GMD"), !is.na(log_slope_sigmac.GNG.degree))
 save_fig(figname="Figure_BetaSigma_FxVBM_GNG", res=BWRES)
 par(mar=c(8,9,5,5), mgp=MYMGP)
-plot_correl(log_slope_sigmac.GNG.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMV"), !is.na(log_slope_sigmac.GNG.degree))
+plot_correl(log_slope_sigmac.GNG.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMD"), !is.na(log_slope_sigmac.GNG.degree))
 
 save_fig(figname="Figure_PET_VBM_GNG", res=BWRES)
 par(mfrow =c(2,2), mar=c(8,9,5,5), mgp=MYMGP)
 plot_correl(slope_muc.GNG.degree, slope_muc.PET, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for BP"), !is.na(slope_muc.GNG.degree * slope_muc.PET) )
 plot_correl(log_slope_sigmac.GNG.degree, log_slope_sigmac.PET, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for BP"), !is.na(log_slope_sigmac.GNG.degree* log_slope_sigmac.PET))
-plot_correl(slope_muc.GNG.degree, slope_muc.VBM, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for GMV"), !is.na(slope_muc.GNG.degree))
-plot_correl(log_slope_sigmac.GNG.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMV"), !is.na(log_slope_sigmac.GNG.degree))
+plot_correl(slope_muc.GNG.degree, slope_muc.VBM, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for GMD"), !is.na(slope_muc.GNG.degree))
+plot_correl(log_slope_sigmac.GNG.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMD"), !is.na(log_slope_sigmac.GNG.degree))
 
 save_fig(figname="Figure_PET_VBM_TAB", res=BWRES)
 par(mfrow =c(2,2), mar=c(8,9,5,5), mgp=MYMGP)
 plot_correl(slope_muc.TAB.degree, slope_muc.PET, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for BP"), !is.na(slope_muc.TAB.degree * slope_muc.PET) )
 plot_correl(log_slope_sigmac.TAB.degree, log_slope_sigmac.PET, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for BP"), !is.na(log_slope_sigmac.TAB.degree* log_slope_sigmac.PET))
-plot_correl(slope_muc.TAB.degree, slope_muc.VBM, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for GMV"), !is.na(slope_muc.TAB.degree))
-plot_correl(log_slope_sigmac.TAB.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMV"), !is.na(log_slope_sigmac.TAB.degree))
+plot_correl(slope_muc.TAB.degree, slope_muc.VBM, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for GMD"), !is.na(slope_muc.TAB.degree))
+plot_correl(log_slope_sigmac.TAB.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMD"), !is.na(log_slope_sigmac.TAB.degree))
 
 save_fig(figname="Figure_PET_VBM_RS", res=BWRES)
 par(mfrow =c(2,2), mar=c(8,9,5,5), mgp=MYMGP)
 plot_correl(slope_muc.RS.degree, slope_muc.PET, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for BP"), !is.na(slope_muc.RS.degree * slope_muc.PET) )
 plot_correl(log_slope_sigmac.RS.degree, log_slope_sigmac.PET, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for BP"), !is.na(log_slope_sigmac.RS.degree* log_slope_sigmac.PET))
-plot_correl(slope_muc.RS.degree, slope_muc.VBM, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for GMV"), !is.na(slope_muc.RS.degree))
-plot_correl(log_slope_sigmac.RS.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMV"), !is.na(log_slope_sigmac.RS.degree))
+plot_correl(slope_muc.RS.degree, slope_muc.VBM, expression("Average nodal " ~ beta[mu] ~ "for FC"), expression(beta[mu] ~ "for GMD"), !is.na(slope_muc.RS.degree))
+plot_correl(log_slope_sigmac.RS.degree, log_slope_sigmac.VBM, expression("Average nodal " ~ beta[sigma] ~ "for FC"), expression(beta[sigma] ~ "for GMD"), !is.na(log_slope_sigmac.RS.degree))
 
 
 # PET controlling for VBM
@@ -417,6 +418,7 @@ save_fig()
 plot_connectome_similarities(INPUT_FILE.TAB, demo, plot_mds=TRUE)
 save_fig()
 plot_connectome_similarities(INPUT_FILE.RS, demo, plot_mds=TRUE)
+
 
 
 #COGNITIVE SCORES
@@ -666,6 +668,6 @@ if(doplot) plot_adj(clusters.adj, MODULES_FILE_MNI, lim = -1, pal=CLUSPAL18, nol
 save_fig(figname="Figure_clusterpies_RS", res=CRES)
 if(doplot) plot_pies(clusters.adj, MODULES_FILE_MNI, pal=CLUSPAL18) 
 
-
+save.image(IMAGE_FILE)
 
 

@@ -115,7 +115,7 @@ plot_adj = function(adj, modules_file, lim=NULL, pal=MYPALETTE, nolegend=FALSE, 
   midpoints = (c(0.5, breaks) + c(breaks, maxval )) / 2
   
   molten_adj = melt(adj)
-  plot_data = rename(molten_adj, from = Var1, to = Var2) 
+  plot_data = dplyr::rename(molten_adj, from = Var1, to = Var2) 
   
   if (nolegend) {
     
@@ -1469,7 +1469,7 @@ plot_matrix = function(adj, lim=NULL, pal=MYPALETTE){ #colorspace::diverge_hsv(1
   seq_names = seq(length(adj_names))
   rownames(adj) = colnames(adj) = seq_names
   molten_adj = melt(adj)
-  plot_data = rename(molten_adj, from = Var1, to = Var2) 
+  plot_data = dplyr::rename(molten_adj, from = Var1, to = Var2) 
   
   theme_new = theme(
     panel.grid.major = element_blank(),
@@ -1966,13 +1966,14 @@ plot_pies = function(adj, modules_file, pal=MYPALETTE){
   
 }
 
-analyze_motion = function(motion_dir, demo, figname){
+analyze_motion = function(motion_dir, demo, figname = NULL){
   
   params = read.table(paste0(motion_dir, 'HeadMotion.csv'), sep=',', header =T)
   
   params$mean.FD_Power_scrubbed = t(read.table(paste0(motion_dir, 'FD_Power_scrubbed.csv'), sep=','))
-  params = merge(params, demo, by.x="Subject.ID", by.y="Subject" )
+  params = merge(params, demo, by.x="Subject.ID", by.y="Subject", all = T )
   
+  if (!is.null(figname)){
   save_fig(figname)
   par(mfrow=c(1, 3))
   boxplot( mean.FD_Power ~ class, data = params, ylim= c(0, 0.5))
@@ -1984,10 +1985,10 @@ analyze_motion = function(motion_dir, demo, figname){
   legend("topright", legend = t.test( mean.FD_Power ~ class, data = params)$p.value)
   legend("bottomright", legend = t.test( mean.FD_Power ~ class, data = params)$statistic)
   
-    boxplot( mean.FD_Power_scrubbed ~ class, data = params, ylim= c(0, 0.5))
+  boxplot( mean.FD_Power_scrubbed ~ class, data = params, ylim= c(0, 0.5))
   legend("topright", legend = t.test( mean.FD_Power_scrubbed ~ class, data = params)$p.value)
   legend("bottomright", legend = t.test( mean.FD_Power_scrubbed ~ class, data = params)$statistic)
-  
+  }
   print(dim(params))
   
   return( params )
